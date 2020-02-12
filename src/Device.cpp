@@ -70,6 +70,29 @@ void Device::load_strings(){
 	}
 }
 
+
+Device * DeviceList::find(
+		VendorId vendor_id,
+		ProductId product_id,
+		const var::String & serial_number
+		){
+
+	for(auto & device: *this){
+		DeviceDescriptor device_descriptor = device.get_device_descriptor();
+		if( (device_descriptor.vendor_id() == vendor_id.argument()) &&
+				(device_descriptor.product_id() == product_id.argument())
+				){
+			if( serial_number.is_empty() ){
+				return &device;
+			} else if( device_descriptor.serial_number_string() == serial_number ){
+				return &device;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 void DeviceHandle::load_endpoint_list(){
 	ConfigurationDescriptor configuration =
 			m_device->get_active_configuration_descriptor();

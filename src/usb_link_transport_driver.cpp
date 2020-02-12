@@ -24,8 +24,13 @@ void usb_link_transport_driver_populate(
 link_transport_phy_t usb_link_transport_driver_open(
 		const char * path,
 		const void * options){
-
 	UsbLinkTransportDriver * handle = new UsbLinkTransportDriver();
+	UsbLinkTransportDriverOptions usb_options(
+			static_cast<const usb_link_transport_driver_options_t*>(options)
+				);
+
+
+
 
 	return handle;
 }
@@ -35,6 +40,7 @@ int usb_link_transport_driver_write(
 		const void* buffer,
 		int size
 		){
+	UsbLinkTransportDriver * h = (UsbLinkTransportDriver *)handle;
 
 	return 0;
 }
@@ -44,6 +50,7 @@ int usb_link_transport_driver_read(
 		void * buffer,
 		int size
 		){
+	UsbLinkTransportDriver * h = (UsbLinkTransportDriver *)handle;
 
 	return 0;
 }
@@ -51,6 +58,7 @@ int usb_link_transport_driver_read(
 int usb_link_transport_driver_close(
 		link_transport_phy_t * handle
 		){
+	UsbLinkTransportDriver * h = (UsbLinkTransportDriver *)handle;
 
 	return 0;
 }

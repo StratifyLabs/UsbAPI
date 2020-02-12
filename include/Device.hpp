@@ -188,6 +188,10 @@ public:
 					);
 	}
 
+	void set_timeout(const chrono::MicroTime & duration){
+		m_timeout = duration;
+	}
+
 private:
 	libusb_device_handle * m_handle;
 	mutable u8 m_location;
@@ -272,9 +276,10 @@ private:
 class DeviceList : public DeviceFlags, public var::Vector<Device> {
 public:
 
-	Device & find(
+	Device * find(
 			VendorId vendor_id,
-			ProductId product_id
+			ProductId product_id,
+			const var::String & serial_number = var::String()
 			);
 
 
