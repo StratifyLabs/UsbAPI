@@ -129,6 +129,7 @@ private:
 class Device
 {
 public:
+
 	Device(libusb_device * device);
 
 	bool is_valid() const {
@@ -175,32 +176,37 @@ public:
 
 	ConfigurationDescriptor get_active_configuration_descriptor();
 
+	ConfigurationDescriptorList configuration_list(){
+		ConfigurationDescriptorList result;
+		size_t configuration_count = get_device_descriptor().configuration_count();
+
+		for(size_t i=0; i < configuration_count; i++){
+			result.push_back(
+						get_configuration_descriptor(i)
+						);
+		}
+
+		return result;
+	}
+
 private:
+
 	libusb_device * m_device = nullptr;
+	var::Vector<var::String> m_string_list;
+
+	void load_strings();
 };
 
-class DeviceList : public DeviceFlags{
+class DeviceList : public DeviceFlags, public var::Vector<Device> {
 public:
-
-	Device & at(size_t offset){
-		return m_list.at(offset);
-	}
-
-	const Device & at(size_t offset) const {
-		return m_list.at(offset);
-	}
 
 	Device & find(
 			VendorId vendor_id,
 			ProductId product_id
 			);
 
-	void push_back(const Device & device){
-		m_list.push_back(device);
-	}
 
 private:
-	var::Vector<Device> m_list;
 
 };
 
