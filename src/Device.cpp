@@ -44,7 +44,7 @@ void Device::load_strings(){
 		int result;
 
 		//strings start at 1 -- 0 is invalid
-		m_string_list.push_back("invalid");
+		m_string_list.push_back("(null)");
 
 		do {
 			buffer.fill(0);
@@ -68,4 +68,103 @@ void Device::load_strings(){
 
 		libusb_close(device_handle);
 	}
+}
+
+void DeviceHandle::load_endpoint_list(){
+	ConfigurationDescriptor configuration =
+			m_device->get_active_configuration_descriptor();
+	m_endpoint_list.clear();
+	for(const auto & interface: configuration.interface_list() ){
+		for(const auto & alternate_setting: interface.alternate_settings_list() ){
+			for(const auto & endpoint: alternate_setting.endpoint_list()){
+				m_endpoint_list.push_back(
+							Endpoint(endpoint).set_interface(
+								alternate_setting.interface_number()
+								)
+							);
+			}
+		}
+	}
+}
+
+const Endpoint DeviceHandle::find_endpoint(u8 address) const{
+	for(const auto & ep: m_endpoint_list){
+		if( ep.address() == (address & 0x7f) ){
+			return ep;
+		}
+	}
+
+	return Endpoint();
+}
+
+int DeviceHandle::read(
+		void * buf,
+		Size size
+		) const {
+	int transferred;
+	int result = -1;
+	const Endpoint endpoint = find_endpoint(m_location);
+	switch(endpoint.transfer_type()){
+		case EndpointDescriptor::transfer_type_bulk:
+			result = libusb_bulk_transfer(
+						m_handle,
+						endpoint.read_address(),
+						(unsigned char*)buf,
+						size.argument(),
+						&transferred,
+						m_timeout.milliseconds()
+						);
+		case EndpointDescriptor::transfer_type_interrupt:
+			result = libusb_interrupt_transfer(
+						m_handle,
+						endpoint.read_address(),
+						(unsigned char*)buf,
+						size.argument(),
+						&transferred,
+						m_timeout.milliseconds()
+						);
+		default:
+			return -1;
+	}
+	if( result == 0 ){
+		return transferred;
+	}
+
+	return result;
+}
+
+int DeviceHandle::write(
+		const void * buf,
+		Size size
+		) const {
+	int transferred;
+	int result = -1;
+	const Endpoint endpoint = find_endpoint(m_location);
+	switch(endpoint.transfer_type()){
+		case EndpointDescriptor::transfer_type_bulk:
+			result = libusb_bulk_transfer(
+						m_handle,
+						endpoint.write_address(),
+						(unsigned char*)buf,
+						size.argument(),
+						&transferred,
+						m_timeout.milliseconds()
+						);
+		case EndpointDescriptor::transfer_type_interrupt:
+			result = libusb_interrupt_transfer(
+						m_handle,
+						endpoint.write_address(),
+						(unsigned char*)buf,
+						size.argument(),
+						&transferred,
+						m_timeout.milliseconds()
+						);
+		default:
+			return -1;
+	}
+	if( result == 0 ){
+		return transferred;
+	}
+
+	return result;
 }

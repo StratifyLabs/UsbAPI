@@ -14,7 +14,6 @@ using DescriptorStringList = var::Vector<var::String>;
 template<typename T> class Descriptor {
 public:
 
-
 	Descriptor(
 			const T * value,
 			const DescriptorStringList & string_list) :
@@ -51,11 +50,28 @@ class EndpointDescriptor:
 		public Descriptor<struct libusb_endpoint_descriptor> {
 public:
 
+	enum transfer_type {
+		transfer_type_control,
+		transfer_type_isochronous,
+		transfer_type_bulk,
+		transfer_type_interrupt,
+		transfer_type_none
+	};
+
 	EndpointDescriptor(
 			const struct libusb_endpoint_descriptor * value,
 			const DescriptorStringList & string_list
 			) : Descriptor(value, string_list){
 
+	}
+
+	enum transfer_type transfer_type() const {
+		u8 bits = attributes() & 0x03;
+		if( bits == 0 ){ return transfer_type_control; }
+		if( bits == 1 ){ return transfer_type_isochronous; }
+		if( bits == 2 ){ return transfer_type_bulk; }
+		if( bits == 3 ){ return transfer_type_interrupt; }
+		return transfer_type_none;
 	}
 
 	u8 endpoint_address() const {

@@ -13,13 +13,80 @@ public:
 
 };
 
-class DeviceHandle : public fs::File {
+class Endpoint {
 public:
 
-	DeviceHandle(){}
+	Endpoint(){
+		m_transfer_type = EndpointDescriptor::transfer_type_none;
+		m_address = 0;
+		m_interface = 0;
+	}
 
+	Endpoint(const EndpointDescriptor & endpoint_descriptor){
+		m_transfer_type = endpoint_descriptor.transfer_type();
+		m_address = endpoint_descriptor.endpoint_address() & 0x7f;
+		m_interface = 0;
+	}
+
+	bool is_valid() const {
+		return m_transfer_type != EndpointDescriptor::transfer_type_none;
+	}
+
+	Endpoint& set_transfer_type(enum EndpointDescriptor::transfer_type value){
+		m_transfer_type = value;
+		return *this;
+	}
+
+	Endpoint& set_address(u8 value){
+		m_address = value & 0x7f;
+		return *this;
+	}
+
+	Endpoint& set_interface(u8 value){
+		m_interface = value & 0x7f;
+		return *this;
+	}
+
+	enum EndpointDescriptor::transfer_type transfer_type() const {
+		return m_transfer_type;
+	}
+
+	u8 address() const {
+		return m_address;
+	}
+
+	u8 read_address() const {
+		return m_address | 0x80;
+	}
+
+	u8 write_address() const {
+		return m_address & 0x7f;
+	}
+
+	u8 interface() const {
+		return m_interface;
+	}
+
+private:
+	enum EndpointDescriptor::transfer_type m_transfer_type;
+	u8 m_address;
+	u8 m_interface;
+};
+
+using EndpointList = var::Vector<Endpoint>;
+
+class Device;
+
+class DeviceHandle : public fs::File {
+public:
+	DeviceHandle(){}
 	DeviceHandle(libusb_device_handle * handle){
 		m_handle = handle;
+	}
+
+	DeviceHandle& set_device(Device * device){
+		m_device = device;
+		return *this;
 	}
 
 	int open(
@@ -27,6 +94,7 @@ public:
 			const fs::OpenFlags & flags = fs::OpenFlags::read_write()
 			){
 		if( is_valid() ){
+			load_endpoint_list();
 			return 0;
 		}
 		return -1;
@@ -120,14 +188,18 @@ public:
 					);
 	}
 
-
 private:
 	libusb_device_handle * m_handle;
 	mutable u8 m_location;
+	EndpointList m_endpoint_list;
+	Device * m_device;
+	chrono::MicroTime m_timeout;
+
+	const Endpoint find_endpoint(u8 address) const;
+	void load_endpoint_list();
 };
 
-class Device
-{
+class Device {
 public:
 
 	Device(libusb_device * device);
@@ -136,12 +208,12 @@ public:
 		return m_device != nullptr;
 	}
 
-	DeviceHandle open(){
+	DeviceHandle get_handle(){
 		libusb_device_handle * handle;
 		if( libusb_open(m_device, &handle) < 0){
 			return DeviceHandle();
 		}
-		return handle;
+		return DeviceHandle(handle).set_device(this);
 	}
 
 	u8 get_bus_number() const {
