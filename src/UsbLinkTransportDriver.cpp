@@ -6,6 +6,7 @@ int UsbLinkTransportDriver::initialize(
 		const UsbLinkTransportDriverOptions & options
 		){
 
+	m_options = options;
 	//find a device in the list that matches options
 	m_device_list = m_session.get_device_list();
 
@@ -36,3 +37,10 @@ int UsbLinkTransportDriver::finalize(){
 	m_device_handle.close();
 	return 0;
 }
+
+int UsbLinkTransportDriver::get_status(){
+
+	//is device still available?
+	return 0;
+}
+

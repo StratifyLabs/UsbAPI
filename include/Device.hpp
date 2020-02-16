@@ -20,11 +20,13 @@ public:
 		m_transfer_type = EndpointDescriptor::transfer_type_none;
 		m_address = 0;
 		m_interface = 0;
+		m_max_packet_size = 0;
 	}
 
 	Endpoint(const EndpointDescriptor & endpoint_descriptor){
 		m_transfer_type = endpoint_descriptor.transfer_type();
 		m_address = endpoint_descriptor.endpoint_address() & 0x7f;
+		m_max_packet_size = endpoint_descriptor.max_packet_size();
 		m_interface = 0;
 	}
 
@@ -67,10 +69,15 @@ public:
 		return m_interface;
 	}
 
+	u16 max_packet_size() const {
+		return m_max_packet_size;
+	}
+
 private:
 	enum EndpointDescriptor::transfer_type m_transfer_type;
 	u8 m_address;
 	u8 m_interface;
+	u16 m_max_packet_size;
 };
 
 using EndpointList = var::Vector<Endpoint>;
@@ -201,6 +208,9 @@ private:
 
 	const Endpoint find_endpoint(u8 address) const;
 	void load_endpoint_list();
+	int transfer(const Endpoint & endpoint, void * buf, int nbyte, bool is_read) const;
+	int transfer_packet(const Endpoint & endpoint, void * buf, int nbyte, bool is_read) const;
+
 };
 
 class Device {
@@ -236,23 +246,23 @@ public:
 		return result;
 	}
 
-	Device get_parent(){
+	Device get_parent() const {
 		return Device(libusb_get_parent(m_device));
 	}
 
-	u8 get_device_addres(){
+	u8 get_device_addres() const {
 		return libusb_get_device_address(m_device);
 	}
 
-	DeviceDescriptor get_device_descriptor();
+	DeviceDescriptor get_device_descriptor() const;
 
 	ConfigurationDescriptor get_configuration_descriptor(
 			int configuration_number
-			);
+			) const;
 
-	ConfigurationDescriptor get_active_configuration_descriptor();
+	ConfigurationDescriptor get_active_configuration_descriptor() const;
 
-	ConfigurationDescriptorList configuration_list(){
+	ConfigurationDescriptorList configuration_list() const {
 		ConfigurationDescriptorList result;
 		size_t configuration_count = get_device_descriptor().configuration_count();
 
@@ -265,12 +275,17 @@ public:
 		return result;
 	}
 
+	const var::Vector<var::String> string_list() const {
+		return m_string_list;
+	}
+
 private:
 
 	libusb_device * m_device = nullptr;
 	var::Vector<var::String> m_string_list;
 
 	void load_strings();
+
 };
 
 class DeviceList : public DeviceFlags, public var::Vector<Device> {

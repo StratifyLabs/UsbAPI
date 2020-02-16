@@ -10,7 +10,7 @@ Device::Device(libusb_device * device){
 }
 
 
-DeviceDescriptor Device::get_device_descriptor(){
+DeviceDescriptor Device::get_device_descriptor() const{
 	struct libusb_device_descriptor descriptor;
 	libusb_get_device_descriptor(
 				m_device,
@@ -21,7 +21,7 @@ DeviceDescriptor Device::get_device_descriptor(){
 
 ConfigurationDescriptor Device::get_configuration_descriptor(
 		int configuration_number
-		){
+		) const{
 	return ConfigurationDescriptor(
 				m_device,
 				configuration_number,
@@ -29,7 +29,7 @@ ConfigurationDescriptor Device::get_configuration_descriptor(
 				);
 }
 
-ConfigurationDescriptor Device::get_active_configuration_descriptor(){
+ConfigurationDescriptor Device::get_active_configuration_descriptor() const{
 	return ConfigurationDescriptor(
 				m_device,
 				m_string_list
@@ -124,61 +124,90 @@ int DeviceHandle::read(
 		void * buf,
 		Size size
 		) const {
-	int transferred;
-	int result = -1;
 	const Endpoint endpoint = find_endpoint(m_location);
-	switch(endpoint.transfer_type()){
-		case EndpointDescriptor::transfer_type_bulk:
-			result = libusb_bulk_transfer(
-						m_handle,
-						endpoint.read_address(),
-						(unsigned char*)buf,
-						size.argument(),
-						&transferred,
-						m_timeout.milliseconds()
-						);
-		case EndpointDescriptor::transfer_type_interrupt:
-			result = libusb_interrupt_transfer(
-						m_handle,
-						endpoint.read_address(),
-						(unsigned char*)buf,
-						size.argument(),
-						&transferred,
-						m_timeout.milliseconds()
-						);
-		default:
-			return -1;
-	}
-	if( result == 0 ){
-		return transferred;
-	}
-
-	return result;
+	return transfer(endpoint, buf, size.argument(), false);
 }
 
 int DeviceHandle::write(
 		const void * buf,
 		Size size
 		) const {
+	const Endpoint endpoint = find_endpoint(m_location);
+	return transfer(endpoint, (void*)buf, size.argument(), false);
+}
+
+int DeviceHandle::transfer(
+		const Endpoint & endpoint,
+		void * buf,
+		int nbyte,
+		bool is_read
+		) const{
+
+	if( endpoint.is_valid() == false ){
+		return -1;
+	}
+	int result;
+	int bytes_transferred = 0;
+	const int max_packet_size = endpoint.max_packet_size();
+	int page_size;
+	u8 * p = static_cast<u8*>(buf);
+
+	do {
+
+		if( nbyte - bytes_transferred > max_packet_size ){
+			page_size = max_packet_size;
+		} else {
+			page_size = nbyte - bytes_transferred;
+		}
+
+		result = transfer_packet(
+					endpoint,
+					p + bytes_transferred,
+					page_size,
+					is_read
+					);
+		if( result > 0 ){
+			bytes_transferred += result;
+		} else {
+			return result;
+		}
+
+	} while( (bytes_transferred < nbyte) && (result > 0) );
+
+	//send a zero length packet??
+	if( page_size == max_packet_size ){
+		transfer_packet(endpoint, nullptr, 0, is_read);
+	}
+
+	return bytes_transferred;
+}
+
+
+int DeviceHandle::transfer_packet(
+		const Endpoint & endpoint,
+		void * buf,
+		int nbyte,
+		bool is_read
+		) const{
 	int transferred;
 	int result = -1;
-	const Endpoint endpoint = find_endpoint(m_location);
+	u8 address = is_read ? endpoint.read_address() : endpoint.write_address();
 	switch(endpoint.transfer_type()){
 		case EndpointDescriptor::transfer_type_bulk:
 			result = libusb_bulk_transfer(
 						m_handle,
-						endpoint.write_address(),
+						address,
 						(unsigned char*)buf,
-						size.argument(),
+						nbyte,
 						&transferred,
 						m_timeout.milliseconds()
 						);
 		case EndpointDescriptor::transfer_type_interrupt:
 			result = libusb_interrupt_transfer(
 						m_handle,
-						endpoint.write_address(),
+						address,
 						(unsigned char*)buf,
-						size.argument(),
+						nbyte,
 						&transferred,
 						m_timeout.milliseconds()
 						);
@@ -190,4 +219,5 @@ int DeviceHandle::write(
 	}
 
 	return result;
+
 }

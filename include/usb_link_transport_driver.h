@@ -16,7 +16,7 @@ typedef struct {
 	u32 timeout_milliseconds;
 } usb_link_transport_driver_options_t;
 
-void usb_link_transport_driver_populate(
+void usb_link_transport_load_driver(
 		link_transport_driver_t * driver
 		);
 
@@ -27,6 +27,11 @@ int usb_link_transport_driver_close(link_transport_phy_t * handle);
 void usb_link_transport_driver_wait(int milliseconds);
 void usb_link_transport_driver_flush(link_transport_phy_t handle);
 void usb_link_transport_driver_request(link_transport_phy_t handle);
+
+int usb_link_transport_getname(char * dest, const char * last, int len);
+int usb_link_transport_lock(link_transport_phy_t handle);
+int usb_link_transport_unlock(link_transport_phy_t handle);
+int usb_link_transport_status(link_transport_phy_t handle);
 
 #if defined __cplusplus
 }
