@@ -17,7 +17,7 @@ typedef struct {
 } usb_link_transport_driver_options_t;
 
 void usb_link_transport_load_driver(
-		link_transport_driver_t * driver
+		link_transport_mdriver_t * driver
 		);
 
 link_transport_phy_t usb_link_transport_driver_open(const char * path, const void * options);

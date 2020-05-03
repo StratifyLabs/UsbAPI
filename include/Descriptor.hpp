@@ -50,7 +50,7 @@ class EndpointDescriptor:
 		public Descriptor<struct libusb_endpoint_descriptor> {
 public:
 
-	enum transfer_type {
+	enum transfer_types {
 		transfer_type_control,
 		transfer_type_isochronous,
 		transfer_type_bulk,
@@ -65,13 +65,17 @@ public:
 
 	}
 
-	enum transfer_type transfer_type() const {
+	enum transfer_types transfer_types() const {
 		u8 bits = attributes() & 0x03;
 		if( bits == 0 ){ return transfer_type_control; }
 		if( bits == 1 ){ return transfer_type_isochronous; }
 		if( bits == 2 ){ return transfer_type_bulk; }
 		if( bits == 3 ){ return transfer_type_interrupt; }
 		return transfer_type_none;
+	}
+
+	u8 address() const {
+		return m_value->bEndpointAddress;
 	}
 
 	u8 endpoint_address() const {
@@ -102,7 +106,7 @@ public:
 		return m_value->extra_length;
 	}
 
-	var::JsonObject to_json() const;
+	var::JsonObject to_object() const;
 
 
 };
@@ -167,7 +171,7 @@ public:
 		return m_value->extra_length;
 	}
 
-	var::JsonObject to_json() const;
+	var::JsonObject to_object() const;
 
 
 };
@@ -200,7 +204,7 @@ public:
 		return result;
 	}
 
-	var::JsonObject to_json() const;
+	var::JsonObject to_object() const;
 
 private:
 	const struct libusb_interface * m_value;
@@ -308,7 +312,7 @@ public:
 		return m_value->extra_length;
 	}
 
-	var::JsonObject to_json() const;
+	var::JsonObject to_object() const;
 
 private:
 	struct libusb_device * m_device = nullptr;
@@ -412,7 +416,7 @@ public:
 		return m_value->bNumConfigurations;
 	}
 
-	var::JsonObject to_json() const;
+	var::JsonObject to_object() const;
 
 private:
 	struct libusb_device_descriptor m_device_descriptor;

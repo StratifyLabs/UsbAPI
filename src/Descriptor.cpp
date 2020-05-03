@@ -9,7 +9,7 @@ DeviceDescriptor::DeviceDescriptor(
 	m_device_descriptor = value;
 }
 
-var::JsonObject DeviceDescriptor::to_json() const {
+var::JsonObject DeviceDescriptor::to_object() const {
 	var::JsonObject result;
 	result.insert("bLength", var::JsonInteger(length()));
 	result.insert("bDescriptorType", var::JsonInteger(type()));
@@ -28,7 +28,7 @@ var::JsonObject DeviceDescriptor::to_json() const {
 	return result;
 }
 
-var::JsonObject EndpointDescriptor::to_json() const {
+var::JsonObject EndpointDescriptor::to_object() const {
 	var::JsonObject result;
 	result.insert("bLength", var::JsonInteger(length()));
 	result.insert("bDescriptorType", var::JsonInteger(type()));
@@ -41,7 +41,7 @@ var::JsonObject EndpointDescriptor::to_json() const {
 	return result;
 }
 
-var::JsonObject InterfaceDescriptor::to_json() const {
+var::JsonObject InterfaceDescriptor::to_object() const {
 	var::JsonObject result;
 	result.insert("bLength", var::JsonInteger(length()));
 	result.insert("bDescriptorType", var::JsonInteger(type()));
@@ -52,28 +52,18 @@ var::JsonObject InterfaceDescriptor::to_json() const {
 	result.insert("bInterfaceProtocol", var::JsonInteger(interface_protocol()));
 	result.insert("bNumEndpoints", var::JsonInteger(endpoint_count()));
 	result.insert("iInterface", var::JsonString(interface_string()));
-	EndpointDescriptorList list = endpoint_list();
-	var::JsonArray array;
-	for(const auto & entry: list){
-		array.append(entry.to_json());
-	}
-	result.insert("endpointsList", array);
+	result.insert("endpointsList", var::JsonArray(endpoint_list()));
 	return result;
 }
 
-var::JsonObject Interface::to_json() const {
+var::JsonObject Interface::to_object() const {
 	var::JsonObject result;
 	result.insert("bNumAlternateSettings", var::JsonInteger(alternate_settings_count()));
-	InterfaceDescriptorList list = alternate_settings_list();
-	var::JsonArray array;
-	for(const auto & entry: list){
-		array.append(entry.to_json());
-	}
-	result.insert("alternateSettingsList", array);
+	result.insert("alternateSettingsList", var::JsonArray(alternate_settings_list()));
 	return result;
 }
 
-var::JsonObject ConfigurationDescriptor::to_json() const {
+var::JsonObject ConfigurationDescriptor::to_object() const {
 	var::JsonObject result;
 	result.insert("bLength", var::JsonInteger(length()));
 	result.insert("bDescriptorType", var::JsonInteger(type()));
@@ -83,12 +73,7 @@ var::JsonObject ConfigurationDescriptor::to_json() const {
 	result.insert("iConfiguration", var::JsonString(configuration_string()));
 	result.insert("bmAttributes", var::JsonInteger(attributes()));
 	result.insert("MaxPower", var::JsonInteger(max_power()));
-	InterfaceList list = interface_list();
-	var::JsonArray array;
-	for(const auto & entry: list){
-		array.append(entry.to_json());
-	}
-	result.insert("interfaceList", array);
+	result.insert("interfaceList", var::JsonArray(interface_list()));
 	return result;
 }
 

@@ -2,6 +2,8 @@
 #define USBAPI_DEVICE_HPP
 
 #include <sapi/fs/File.hpp>
+#include <sapi/var/Vector.hpp>
+
 #include "Descriptor.hpp"
 
 namespace usb {
@@ -24,7 +26,7 @@ public:
 	}
 
 	Endpoint(const EndpointDescriptor & endpoint_descriptor){
-		m_transfer_type = endpoint_descriptor.transfer_type();
+		m_transfer_type = endpoint_descriptor.transfer_types();
 		m_address = endpoint_descriptor.endpoint_address() & 0x7f;
 		m_max_packet_size = endpoint_descriptor.max_packet_size();
 		m_interface = 0;
@@ -34,7 +36,7 @@ public:
 		return m_transfer_type != EndpointDescriptor::transfer_type_none;
 	}
 
-	Endpoint& set_transfer_type(enum EndpointDescriptor::transfer_type value){
+	Endpoint& set_transfer_type(enum EndpointDescriptor::transfer_types value){
 		m_transfer_type = value;
 		return *this;
 	}
@@ -49,7 +51,7 @@ public:
 		return *this;
 	}
 
-	enum EndpointDescriptor::transfer_type transfer_type() const {
+	enum EndpointDescriptor::transfer_types transfer_type() const {
 		return m_transfer_type;
 	}
 
@@ -73,16 +75,22 @@ public:
 		return m_max_packet_size;
 	}
 
+	static const Endpoint& empty(){
+		return m_empty_endpoint;
+	}
+
 private:
-	enum EndpointDescriptor::transfer_type m_transfer_type;
+	enum EndpointDescriptor::transfer_types m_transfer_type;
 	u8 m_address;
 	u8 m_interface;
 	u16 m_max_packet_size;
+	static Endpoint m_empty_endpoint;
 };
 
 using EndpointList = var::Vector<Endpoint>;
 
 class Device;
+
 
 class DeviceHandle : public fs::File {
 public:
@@ -100,10 +108,19 @@ public:
 			const var::String & name,
 			const fs::OpenFlags & flags = fs::OpenFlags::read_write()
 			){
+
 		if( is_valid() ){
+			m_interface_number = name.to_unsigned_long(var::String::base_16);
+			printf("%s():%d: open with iface: %s (%d)\n",
+						 __FUNCTION__,
+						 __LINE__,
+						 name.cstring(),
+						 m_interface_number
+						 );
 			load_endpoint_list();
-			return 0;
+			return claim_interface();
 		}
+		m_interface_number = -1;
 		return -1;
 	}
 
@@ -114,8 +131,9 @@ public:
 	int close(){
 		if( m_handle ){
 			libusb_device_handle * handle = m_handle;
+			release_interface();
 			m_handle = nullptr;
-			libusb_close(m_handle);
+			libusb_close(handle);
 		}
 		return 0;
 	}
@@ -132,9 +150,13 @@ public:
 
 	int seek(
 			int location,
-			enum whence whence = SET
+			enum whence whence = whence_set
 			) const {
-		m_location = location;
+		switch(whence){
+			case whence_current: m_location += location; break;
+			case whence_set: m_location = location; break;
+			case whence_end: return -1;
+		}
 		return m_location;
 	}
 
@@ -150,14 +172,35 @@ public:
 		return m_handle != nullptr;
 	}
 
-	int get_configuration();
-	int set_configuration(int configuration_number);
-	int claim_interface(int interface_number);
-	int release_interface(int interface_number);
+	int get_configuration(){
+		int configuration_number;
+		libusb_get_configuration(m_handle, &configuration_number);
+		return configuration_number;
+	}
+
+	int set_configuration(int configuration_number){
+		return libusb_set_configuration(m_handle, configuration_number);
+	}
+
+	int claim_interface(){
+		return libusb_claim_interface(m_handle, m_interface_number);
+	}
+
+	int release_interface(){
+		return libusb_release_interface(m_handle, m_interface_number);
+	}
+
 	int set_interface_alternate_setting(
 			int interface_number,
 			int alternate_setting
-			);
+			){
+
+		return libusb_set_interface_alt_setting(
+					m_handle,
+					interface_number,
+					alternate_setting
+					);
+	}
 
 	int clear_halt(u8 endpoint_address){
 		return libusb_clear_halt(m_handle, endpoint_address);
@@ -200,16 +243,39 @@ public:
 	}
 
 private:
-	libusb_device_handle * m_handle;
+	class DeviceReadBuffer {
+	public:
+
+		int copy_and_erase_bytes(void * dest, int nbyte){
+			int byte_count = nbyte < buffer().size() ? nbyte : buffer().size();
+			if( byte_count ){
+				memcpy(dest, buffer().data(), byte_count);
+				buffer().erase(
+							var::Vector<u8>::Position(0),
+							var::Vector<u8>::Count(byte_count)
+							);
+			}
+			return byte_count;
+		}
+
+	private:
+		API_ACCESS_COMPOUND(DeviceReadBuffer, var::Vector<u8>, buffer);
+		API_ACCESS_FUNDAMENTAL(DeviceReadBuffer, u8, address, 0xff);
+	};
+
 	mutable u8 m_location;
-	EndpointList m_endpoint_list;
+	int m_interface_number;
+	API_READ_ACCESS_COMPOUND(DeviceHandle, EndpointList, endpoint_list);
+	mutable var::Vector<DeviceReadBuffer> m_read_buffer_list;
+	libusb_device_handle * m_handle;
 	Device * m_device;
 	chrono::MicroTime m_timeout;
 
-	const Endpoint find_endpoint(u8 address) const;
+	const Endpoint& find_endpoint(u8 address) const;
 	void load_endpoint_list();
 	int transfer(const Endpoint & endpoint, void * buf, int nbyte, bool is_read) const;
 	int transfer_packet(const Endpoint & endpoint, void * buf, int nbyte, bool is_read) const;
+
 
 };
 
@@ -296,7 +362,6 @@ public:
 			ProductId product_id,
 			const var::String & serial_number = var::String()
 			);
-
 
 private:
 

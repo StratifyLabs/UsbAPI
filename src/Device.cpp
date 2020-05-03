@@ -3,6 +3,7 @@
 
 using namespace usb;
 
+Endpoint Endpoint::m_empty_endpoint;
 
 Device::Device(libusb_device * device){
 	m_device = device;
@@ -90,6 +91,7 @@ Device * DeviceList::find(
 		}
 	}
 
+
 	return nullptr;
 }
 
@@ -97,35 +99,82 @@ void DeviceHandle::load_endpoint_list(){
 	ConfigurationDescriptor configuration =
 			m_device->get_active_configuration_descriptor();
 	m_endpoint_list.clear();
-	for(const auto & interface: configuration.interface_list() ){
-		for(const auto & alternate_setting: interface.alternate_settings_list() ){
-			for(const auto & endpoint: alternate_setting.endpoint_list()){
-				m_endpoint_list.push_back(
-							Endpoint(endpoint).set_interface(
-								alternate_setting.interface_number()
-								)
-							);
+	for(const Interface & interface: configuration.interface_list() ){
+		for(const InterfaceDescriptor & alternate_setting: interface.alternate_settings_list() ){
+			if( alternate_setting.interface_number() == m_interface_number ){
+				for(const EndpointDescriptor & endpoint: alternate_setting.endpoint_list()){
+					m_endpoint_list.push_back(
+								Endpoint(endpoint)
+								.set_interface(alternate_setting.interface_number())
+								);
+				}
 			}
 		}
 	}
 }
 
-const Endpoint DeviceHandle::find_endpoint(u8 address) const{
+const Endpoint& DeviceHandle::find_endpoint(u8 address) const{
 	for(const auto & ep: m_endpoint_list){
 		if( ep.address() == (address & 0x7f) ){
 			return ep;
 		}
 	}
 
-	return Endpoint();
+	return Endpoint::empty();
 }
 
 int DeviceHandle::read(
 		void * buf,
 		Size size
 		) const {
+
+
 	const Endpoint endpoint = find_endpoint(m_location);
-	return transfer(endpoint, buf, size.argument(), false);
+
+	DeviceReadBuffer * read_buffer = nullptr;
+	for(DeviceReadBuffer& buffer: m_read_buffer_list){
+		if( buffer.address() == endpoint.address() ){
+			read_buffer = &buffer;
+			break;
+		}
+	}
+
+	if( read_buffer == nullptr ){
+		m_read_buffer_list.push_back(
+					DeviceReadBuffer()
+					.set_address(endpoint.address())
+					);
+		read_buffer = &m_read_buffer_list.back();
+		read_buffer->buffer().reserve(endpoint.max_packet_size());
+	}
+
+	//are there bytes left in the buffer
+	int bytes_read = 0;
+	do {
+		bytes_read += read_buffer->copy_and_erase_bytes(
+					static_cast<char*>(buf) + bytes_read,
+					size.argument() - bytes_read
+					);
+		if( bytes_read < size.argument() ){
+			read_buffer->buffer().resize(endpoint.max_packet_size());
+			int result = transfer(
+						endpoint,
+						read_buffer->buffer().data(),
+						read_buffer->buffer().count(),
+						true);
+			if( result > 0 ){
+				read_buffer->buffer().resize(result);
+				printf("%s():%d buffer size %d\n",
+							 __FUNCTION__, __LINE__,
+							 read_buffer->buffer().count());
+			} else {
+				read_buffer->buffer().resize(0);
+				return bytes_read;
+			}
+		}
+	} while( bytes_read < size.argument() );
+
+	return bytes_read;
 }
 
 int DeviceHandle::write(
@@ -169,14 +218,24 @@ int DeviceHandle::transfer(
 		if( result > 0 ){
 			bytes_transferred += result;
 		} else {
+			printf("%s():%d:transfer error result %d\n", __FUNCTION__, __LINE__, result);
 			return result;
 		}
 
-	} while( (bytes_transferred < nbyte) && (result > 0) );
+	} while( (bytes_transferred < nbyte) && (result == max_packet_size) );
 
 	//send a zero length packet??
-	if( page_size == max_packet_size ){
+	if( result == max_packet_size ){
+		printf("%s():%d:zlp\n", __FUNCTION__, __LINE__);
 		transfer_packet(endpoint, nullptr, 0, is_read);
+	}
+
+	if( bytes_transferred > 0 ){
+		printf("%s():%d: data transferred %s\n", __FUNCTION__, __LINE__,
+					 var::Reference(
+						 var::Reference::ReadOnlyBuffer(buf),
+						 var::Reference::Size(bytes_transferred)
+						 ).to_string().cstring());
 	}
 
 	return bytes_transferred;
@@ -188,32 +247,47 @@ int DeviceHandle::transfer_packet(
 		void * buf,
 		int nbyte,
 		bool is_read
-		) const{
+		) const {
 	int transferred;
 	int result = -1;
-	u8 address = is_read ? endpoint.read_address() : endpoint.write_address();
+	u8 address= is_read ? endpoint.read_address() : endpoint.write_address();
 	switch(endpoint.transfer_type()){
 		case EndpointDescriptor::transfer_type_bulk:
 			result = libusb_bulk_transfer(
 						m_handle,
 						address,
-						(unsigned char*)buf,
+						static_cast<unsigned char*>(buf),
 						nbyte,
 						&transferred,
 						m_timeout.milliseconds()
 						);
+			printf("%s():%d bulk transfer %d %s to 0x%X result is %d transferred %d\n",
+						 __FUNCTION__, __LINE__,
+						 nbyte,
+						 is_read ? "<-" : "->",
+						 address, result, transferred
+						 );
+			if( is_read &&
+					((result == 0) || (result == LIBUSB_ERROR_TIMEOUT )) ){
+				if( transferred > 0 ){
+					result = 0;
+				}
+			}
+			break;
 		case EndpointDescriptor::transfer_type_interrupt:
 			result = libusb_interrupt_transfer(
 						m_handle,
 						address,
-						(unsigned char*)buf,
+						static_cast<unsigned char*>(buf),
 						nbyte,
 						&transferred,
 						m_timeout.milliseconds()
 						);
+			break;
 		default:
 			return -1;
 	}
+
 	if( result == 0 ){
 		return transferred;
 	}
