@@ -14,6 +14,12 @@ public:
 		m_context = nullptr;
 	}
 
+	void reinitialize(){
+		libusb_exit(m_context);
+		m_context = nullptr;
+		libusb_init(&m_context);
+	}
+
 	DeviceList get_device_list(){
 		DeviceList result;
 		libusb_device ** device;

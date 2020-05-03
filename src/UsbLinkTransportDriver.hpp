@@ -92,7 +92,7 @@ public:
 	}
 
 	chrono::Milliseconds timeout() const {
-		return chrono::Milliseconds(1);
+		return chrono::Milliseconds(50);
 	}
 
 private:
@@ -113,10 +113,6 @@ public:
 
 	int get_status();
 
-	const usb::DeviceHandle & device_handle() const {
-		return m_device_handle;
-	}
-
 	static bool is_device_stratify_os(const usb::Device & device){
 		for(const auto & entry: device.string_list()){
 			if( var::String(entry).to_lower().find("stratify") != var::String::npos ){
@@ -132,9 +128,9 @@ public:
 
 private:
 	API_ACCESS_FUNDAMENTAL(UsbLinkTransportDriver, u8, endpoint_address, 0xff);
+	API_ACCESS_COMPOUND(UsbLinkTransportDriver, usb::DeviceHandle, device_handle);
 	usb::Session m_session;
 	usb::DeviceList m_device_list;
-	usb::DeviceHandle m_device_handle;
 	UsbLinkTransportDriverOptions m_options;
 };
 

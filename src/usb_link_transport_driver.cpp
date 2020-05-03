@@ -28,7 +28,11 @@ typedef struct {
 void usb_link_transport_load_driver(
 		link_transport_mdriver_t * driver
 		){
-	*driver = usb_link_transport_default_driver;
+	memcpy(
+				driver,
+				&usb_link_transport_default_driver,
+				sizeof(link_transport_mdriver_t)
+				);
 }
 
 int usb_link_transport_getname(char * dest, const char * last, int len){
@@ -41,7 +45,12 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 	}
 
 	//return the format vid/pid/serial
-	usb::Session session;
+	static usb::Session session;
+
+	if( last == nullptr ){
+		session.reinitialize();
+	}
+
 	usb::DeviceList device_list = session.get_device_list();
 
 	//where is the last entry
@@ -60,18 +69,37 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 				for(const usb::InterfaceDescriptor& iface_descriptor: alternate_setting_list){
 					if( UsbLinkTransportDriver::is_interface_stratify_os(iface_descriptor) == true ){
 						String device_path = UsbLinkPath(device, iface_descriptor.interface_number()).build_path();
-						if( is_next_new || last_entry.is_empty() ){
-							dest_entry = device_path;
-							strncpy(dest, dest_entry.cstring(), len);
-							return 0;
+
+						//check if this interface has a bulk in and bulk out endpoint
+						usb::EndpointDescriptorList	endpoint_list = iface_descriptor.endpoint_list();
+
+						bool is_bulk_input = false;
+						bool is_bulk_output = false;
+
+						for(const usb::EndpointDescriptor& ep: endpoint_list){
+							if( ep.transfer_type() == usb::EndpointDescriptor::transfer_type_bulk ){
+								if( ep.is_direction_in() ){
+									is_bulk_input = true;
+								} else {
+									is_bulk_output = true;
+								}
+							}
 						}
 
-						if( device_path == last_entry ){
-							is_next_new = true;
+
+						if( is_bulk_input && is_bulk_output ){
+							if( is_next_new || last_entry.is_empty() ){
+								dest_entry = device_path;
+								strncpy(dest, dest_entry.cstring(), len);
+								return 0;
+							}
+
+							if( device_path == last_entry ){
+								is_next_new = true;
+							}
 						}
 					}
 				}
-
 			}
 		}
 	}
@@ -152,7 +180,6 @@ int usb_link_transport_driver_read(
 		return -1;
 	}
 
-	//printf("%s():%d: read %d bytes\n", __FUNCTION__, __LINE__, size);
 	return h->device_handle().read(buffer, usb::DeviceHandle::Size(size));
 }
 
@@ -179,9 +206,16 @@ void usb_link_transport_driver_flush(
 		link_transport_phy_t handle
 		){
 	u8 c;
+	UsbLinkTransportDriver * h =
+			static_cast<UsbLinkTransportDriver *>(handle);
+
+	chrono::MicroTime timeout = h->device_handle().timeout();
+
 	while( usb_link_transport_driver_read(handle, &c, 1) == 1 ){
 		;
 	}
+
+	h->device_handle().set_timeout(timeout);
 }
 
 void usb_link_transport_driver_request(

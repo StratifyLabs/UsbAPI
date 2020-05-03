@@ -165,6 +165,7 @@ int DeviceHandle::read(
 			if( result > 0 ){
 				read_buffer->buffer().resize(result);
 			} else {
+				//printf("%s():%d: transfer got not bytes\n", __FUNCTION__, __LINE__);
 				read_buffer->buffer().resize(0);
 				return bytes_read;
 			}
@@ -215,15 +216,15 @@ int DeviceHandle::transfer(
 		if( result > 0 ){
 			bytes_transferred += result;
 		} else {
-			printf("%s():%d:transfer error result %d\n", __FUNCTION__, __LINE__, result);
+			//printf("%s():%d:transfer error result %d\n", __FUNCTION__, __LINE__, result);
 			return result;
 		}
 
 	} while( (bytes_transferred < nbyte) && (result == max_packet_size) );
 
 	//send a zero length packet??
-	if( result == max_packet_size ){
-		printf("%s():%d:zlp\n", __FUNCTION__, __LINE__);
+	if( !is_read && (result == max_packet_size) ){
+		//printf("%s():%d:zlp\n", __FUNCTION__, __LINE__);
 		transfer_packet(endpoint, nullptr, 0, is_read);
 	}
 
@@ -251,12 +252,14 @@ int DeviceHandle::transfer_packet(
 						&transferred,
 						m_timeout.milliseconds()
 						);
+#if 0
 			printf("%s():%d bulk transfer %d %s to 0x%X result is %d transferred %d\n",
 						 __FUNCTION__, __LINE__,
 						 nbyte,
 						 is_read ? "<-" : "->",
 						 address, result, transferred
 						 );
+#endif
 			if( is_read &&
 					((result == 0) || (result == LIBUSB_ERROR_TIMEOUT )) ){
 				if( transferred > 0 ){

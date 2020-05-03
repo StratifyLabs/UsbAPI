@@ -26,7 +26,7 @@ public:
 	}
 
 	Endpoint(const EndpointDescriptor & endpoint_descriptor){
-		m_transfer_type = endpoint_descriptor.transfer_types();
+		m_transfer_type = endpoint_descriptor.transfer_type();
 		m_address = endpoint_descriptor.endpoint_address() & 0x7f;
 		m_max_packet_size = endpoint_descriptor.max_packet_size();
 		m_interface = 0;
@@ -111,12 +111,6 @@ public:
 
 		if( is_valid() ){
 			m_interface_number = name.to_unsigned_long(var::String::base_16);
-			printf("%s():%d: open with iface: %s (%d)\n",
-						 __FUNCTION__,
-						 __LINE__,
-						 name.cstring(),
-						 m_interface_number
-						 );
 			load_endpoint_list();
 			return claim_interface();
 		}
@@ -238,9 +232,6 @@ public:
 					);
 	}
 
-	void set_timeout(const chrono::MicroTime & duration){
-		m_timeout = duration;
-	}
 
 private:
 	class DeviceReadBuffer {
@@ -266,10 +257,10 @@ private:
 	mutable u8 m_location;
 	int m_interface_number;
 	API_READ_ACCESS_COMPOUND(DeviceHandle, EndpointList, endpoint_list);
+	API_ACCESS_COMPOUND(DeviceHandle, chrono::MicroTime, timeout);
 	mutable var::Vector<DeviceReadBuffer> m_read_buffer_list;
 	libusb_device_handle * m_handle;
 	Device * m_device;
-	chrono::MicroTime m_timeout;
 
 	const Endpoint& find_endpoint(u8 address) const;
 	void load_endpoint_list();

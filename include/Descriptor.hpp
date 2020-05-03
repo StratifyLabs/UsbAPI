@@ -65,7 +65,7 @@ public:
 
 	}
 
-	enum transfer_types transfer_types() const {
+	enum transfer_types transfer_type() const {
 		u8 bits = attributes() & 0x03;
 		if( bits == 0 ){ return transfer_type_control; }
 		if( bits == 1 ){ return transfer_type_isochronous; }
@@ -76,6 +76,14 @@ public:
 
 	u8 address() const {
 		return m_value->bEndpointAddress;
+	}
+
+	bool is_direction_in() const {
+		return address() & 0x80;
+	}
+
+	bool is_direction_out() const {
+		return (address() & 0x80) == 0;
 	}
 
 	u8 endpoint_address() const {
