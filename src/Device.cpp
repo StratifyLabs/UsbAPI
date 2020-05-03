@@ -164,9 +164,6 @@ int DeviceHandle::read(
 						true);
 			if( result > 0 ){
 				read_buffer->buffer().resize(result);
-				printf("%s():%d buffer size %d\n",
-							 __FUNCTION__, __LINE__,
-							 read_buffer->buffer().count());
 			} else {
 				read_buffer->buffer().resize(0);
 				return bytes_read;
@@ -230,13 +227,6 @@ int DeviceHandle::transfer(
 		transfer_packet(endpoint, nullptr, 0, is_read);
 	}
 
-	if( bytes_transferred > 0 ){
-		printf("%s():%d: data transferred %s\n", __FUNCTION__, __LINE__,
-					 var::Reference(
-						 var::Reference::ReadOnlyBuffer(buf),
-						 var::Reference::Size(bytes_transferred)
-						 ).to_string().cstring());
-	}
 
 	return bytes_transferred;
 }

@@ -152,7 +152,7 @@ int usb_link_transport_driver_read(
 		return -1;
 	}
 
-	printf("%s():%d: read %d bytes\n", __FUNCTION__, __LINE__, size);
+	//printf("%s():%d: read %d bytes\n", __FUNCTION__, __LINE__, size);
 	return h->device_handle().read(buffer, usb::DeviceHandle::Size(size));
 }
 
