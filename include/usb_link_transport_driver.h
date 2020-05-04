@@ -7,15 +7,6 @@
 extern "C" {
 #endif
 
-typedef struct {
-	u16 vendor_id;
-	u16 product_id;
-	char serial_number[256];
-	u8 link_endpoint_address;
-	u8 request_endpoint_address;
-	u32 timeout_milliseconds;
-} usb_link_transport_driver_options_t;
-
 void usb_link_transport_load_driver(
 		link_transport_mdriver_t * driver
 		);
