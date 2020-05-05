@@ -9,15 +9,17 @@ static const link_transport_mdriver_t usb_link_transport_default_driver = {
 	.unlock = usb_link_transport_unlock,
 	.status = usb_link_transport_status,
 	.options = 0,
-	.phy_driver.handle = LINK_PHY_OPEN_ERROR,
-	.phy_driver.open = usb_link_transport_driver_open,
-	.phy_driver.write = usb_link_transport_driver_write,
-	.phy_driver.read = usb_link_transport_driver_read,
-	.phy_driver.close = usb_link_transport_driver_close,
-	.phy_driver.flush = usb_link_transport_driver_flush,
-	.phy_driver.wait = usb_link_transport_driver_wait,
-	.phy_driver.timeout = 100,
-	.phy_driver.o_flags = 0,
+	.phy_driver = {
+		.handle = LINK_PHY_OPEN_ERROR,
+		.open = usb_link_transport_driver_open,
+		.write = usb_link_transport_driver_write,
+		.read = usb_link_transport_driver_read,
+		.close = usb_link_transport_driver_close,
+		.flush = usb_link_transport_driver_flush,
+		.wait = usb_link_transport_driver_wait,
+		.timeout = 100,
+		.o_flags = 0
+	},
 	.transport_version = 0
 };
 
