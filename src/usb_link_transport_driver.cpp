@@ -8,7 +8,6 @@ static const link_transport_mdriver_t usb_link_transport_default_driver = {
 	.lock = usb_link_transport_lock,
 	.unlock = usb_link_transport_unlock,
 	.status = usb_link_transport_status,
-	.options = 0,
 	.phy_driver = {
 		.handle = LINK_PHY_OPEN_ERROR,
 		.open = usb_link_transport_driver_open,
@@ -20,6 +19,9 @@ static const link_transport_mdriver_t usb_link_transport_default_driver = {
 		.timeout = 100,
 		.o_flags = 0
 	},
+	.dev_name = {0},
+	.notify_name = {0},
+	.options = nullptr,
 	.transport_version = 0
 };
 
