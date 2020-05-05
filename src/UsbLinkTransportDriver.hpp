@@ -92,7 +92,7 @@ public:
 	}
 
 	chrono::Milliseconds timeout() const {
-		return chrono::Milliseconds(50);
+		return chrono::Milliseconds(2);
 	}
 
 private:

@@ -200,7 +200,19 @@ int usb_link_transport_driver_read(
 		return -1;
 	}
 
-	return h->device_handle().read(buffer, usb::DeviceHandle::Size(size));
+	//printf("%s():%d read %d bytes\n", __FUNCTION__, __LINE__, size);
+	int result = h->device_handle().read(buffer, usb::DeviceHandle::Size(size));
+
+	if( result > 0 ){
+		return result;
+	}
+
+	if( result == LIBUSB_ERROR_TIMEOUT ){
+		return 0;
+	}
+
+	return LINK_PHY_ERROR;
+
 }
 
 int usb_link_transport_driver_close(
@@ -219,6 +231,11 @@ int usb_link_transport_driver_close(
 
 void usb_link_transport_driver_wait(
 		int milliseconds){
+
+	if( milliseconds < 2 ){
+		return;
+	}
+
 	chrono::wait(chrono::Milliseconds(milliseconds));
 }
 

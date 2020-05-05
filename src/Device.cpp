@@ -171,7 +171,7 @@ int DeviceHandle::read(
 				if( bytes_read > 0 ){
 					return bytes_read;
 				}
-				return -1;
+				return result;
 			}
 		}
 	}
