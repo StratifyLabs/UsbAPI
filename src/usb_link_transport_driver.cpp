@@ -14,8 +14,11 @@ static const link_transport_mdriver_t usb_link_transport_default_driver = {
 		.write = usb_link_transport_driver_write,
 		.read = usb_link_transport_driver_read,
 		.close = usb_link_transport_driver_close,
-		.flush = usb_link_transport_driver_flush,
 		.wait = usb_link_transport_driver_wait,
+		.flush = usb_link_transport_driver_flush,
+		.request = nullptr,
+		.transport_read = nullptr,
+		.transport_write = nullptr,
 		.timeout = 100,
 		.o_flags = 0
 	},
