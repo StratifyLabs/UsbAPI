@@ -1,4 +1,5 @@
 #include <sapi/var.hpp>
+#include <sapi/chrono.hpp>
 #include "UsbLinkTransportDriver.hpp"
 #include "usb_link_transport_driver.h"
 
@@ -44,14 +45,26 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 		last_entry = String(last);
 	}
 
+	const usb::SessionOptions session_options =
+			usb::SessionOptions()
+			.set_vendor_id(0x20a0);
+
 	//return the format vid/pid/serial
+	chrono::Timer t;
+	t.start();
 	static usb::Session session;
+	static bool is_first_call = true;
+	static usb::DeviceList device_list = session.get_device_list(session_options);
 
-	if( last == nullptr ){
-		session.reinitialize();
+	if( is_first_call == false ){
+		if( (last == nullptr) || (last[0] == 0) ){
+			chrono::Timer t;
+			t.start();
+			device_list = session.get_device_list(session_options);
+		}
+	} else {
+		is_first_call = false;
 	}
-
-	usb::DeviceList device_list = session.get_device_list();
 
 	//where is the last entry
 	bool is_next_new = false;

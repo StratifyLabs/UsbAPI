@@ -22,7 +22,7 @@ DeviceDescriptor Device::get_device_descriptor() const{
 
 ConfigurationDescriptor Device::get_configuration_descriptor(
 		int configuration_number
-		) const{
+		) const {
 	return ConfigurationDescriptor(
 				m_device,
 				configuration_number,
@@ -44,6 +44,7 @@ void Device::load_strings(){
 		int idx = 1;
 		int result;
 
+		m_string_list.reserve(16);
 		//strings start at 1 -- 0 is invalid
 		m_string_list.push_back("(null)");
 
@@ -150,7 +151,7 @@ int DeviceHandle::read(
 
 	//are there bytes left in the buffer
 	int bytes_read = 0;
-	do {
+	while( bytes_read < size.argument() ){
 		bytes_read += read_buffer->copy_and_erase_bytes(
 					static_cast<char*>(buf) + bytes_read,
 					size.argument() - bytes_read
@@ -167,10 +168,13 @@ int DeviceHandle::read(
 			} else {
 				//printf("%s():%d: transfer got not bytes\n", __FUNCTION__, __LINE__);
 				read_buffer->buffer().resize(0);
-				return bytes_read;
+				if( bytes_read > 0 ){
+					return bytes_read;
+				}
+				return -1;
 			}
 		}
-	} while( bytes_read < size.argument() );
+	}
 
 	return bytes_read;
 }

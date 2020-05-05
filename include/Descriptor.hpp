@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <mcu/types.h>
 #include <libusb-1.0/libusb.h>
+#include <sapi/var/String.hpp>
 #include <sapi/var/Vector.hpp>
 #include <sapi/var/Json.hpp>
 
@@ -16,7 +17,8 @@ public:
 
 	Descriptor(
 			const T * value,
-			const DescriptorStringList & string_list) :
+			const DescriptorStringList & string_list
+			) :
 		m_string_list_reference(string_list){
 		m_value = value;
 	}
@@ -34,10 +36,10 @@ public:
 	}
 
 	const var::String & string(u8 index) const {
-		if( index >= string_list().count() ){
-			index = 0;
+		if( index < string_list().count() ){
+			return string_list().at(index);
 		}
-		return string_list().at(index);
+		return var::String::empty_string();
 	}
 
 protected:

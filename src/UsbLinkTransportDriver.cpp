@@ -8,7 +8,11 @@ int UsbLinkTransportDriver::initialize(
 
 	m_options = options;
 	//find a device in the list that matches options
-	m_device_list = m_session.get_device_list();
+	m_device_list = m_session.get_device_list(
+				usb::SessionOptions()
+				.set_vendor_id(options.vendor_id())
+				.set_product_id(options.product_id())
+				);
 
 	usb::Device * device = m_device_list.find(
 				usb::DeviceList::VendorId(options.vendor_id()),

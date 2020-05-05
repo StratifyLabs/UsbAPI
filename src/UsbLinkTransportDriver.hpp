@@ -114,6 +114,7 @@ public:
 	int get_status();
 
 	static bool is_device_stratify_os(const usb::Device & device){
+
 		for(const auto & entry: device.string_list()){
 			if( var::String(entry).to_lower().find("stratify") != var::String::npos ){
 				return true;

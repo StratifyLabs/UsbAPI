@@ -280,6 +280,7 @@ public:
 	}
 
 	DeviceHandle get_handle(){
+		load_strings();
 		libusb_device_handle * handle;
 		if( libusb_open(m_device, &handle) < 0){
 			return DeviceHandle();
@@ -332,14 +333,9 @@ public:
 		return result;
 	}
 
-	const var::Vector<var::String> string_list() const {
-		return m_string_list;
-	}
-
 private:
-
 	libusb_device * m_device = nullptr;
-	var::Vector<var::String> m_string_list;
+	API_READ_ACCESS_COMPOUND(Device,var::StringList,string_list);
 
 	void load_strings();
 
