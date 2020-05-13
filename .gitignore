@@ -1,3 +1,4 @@
 
 cmake_link/
 *.user
+cmake_qt_link/

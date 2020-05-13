@@ -1,4 +1,5 @@
 #include <sapi/var.hpp>
+#include <sapi/sys.hpp>
 #include <sapi/chrono.hpp>
 #include "UsbLinkTransportDriver.hpp"
 #include "usb_link_transport_driver.h"
@@ -44,7 +45,6 @@ void usb_link_transport_load_driver(
 }
 
 int usb_link_transport_getname(char * dest, const char * last, int len){
-
 	String last_entry;
 	String dest_entry;
 
@@ -57,16 +57,12 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 			.set_vendor_id(0x20a0);
 
 	//return the format vid/pid/serial
-	chrono::Timer t;
-	t.start();
 	static usb::Session session;
 	static bool is_first_call = true;
 	static usb::DeviceList device_list = session.get_device_list(session_options);
 
 	if( is_first_call == false ){
 		if( (last == nullptr) || (last[0] == 0) ){
-			chrono::Timer t;
-			t.start();
 			device_list = session.get_device_list(session_options);
 		}
 	} else {
@@ -110,7 +106,10 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 						if( is_bulk_input && is_bulk_output ){
 							if( is_next_new || last_entry.is_empty() ){
 								dest_entry = device_path;
-								strncpy(dest, dest_entry.cstring(), len);
+								strncpy(
+											dest,
+											dest_entry.cstring(),
+											static_cast<size_t>(len));
 								return 0;
 							}
 
@@ -128,17 +127,18 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 }
 
 int usb_link_transport_lock(link_transport_phy_t handle){
-
+	MCU_UNUSED_ARGUMENT(handle);
 	return 0;
 }
 
 int usb_link_transport_unlock(link_transport_phy_t handle){
+	MCU_UNUSED_ARGUMENT(handle);
 	return 0;
 }
 
 int usb_link_transport_status(link_transport_phy_t handle){
 	//check if the USB connection is still valid
-	UsbLinkTransportDriver * h = (UsbLinkTransportDriver *)handle;
+	UsbLinkTransportDriver * h = reinterpret_cast<UsbLinkTransportDriver *>(handle);
 	if( handle == nullptr ){
 		return -1;
 	}
@@ -181,12 +181,17 @@ int usb_link_transport_driver_write(
 		const void* buffer,
 		int size
 		){
-	UsbLinkTransportDriver * h = (UsbLinkTransportDriver *)handle;
+	UsbLinkTransportDriver * h = reinterpret_cast<UsbLinkTransportDriver *>(handle);
 	if( handle == nullptr ){
 		return -1;
 	}
 
-	return h->device_handle().write(buffer, usb::DeviceHandle::Size(size));
+	return h->device_handle().write(
+				buffer,
+				usb::DeviceHandle::Size(
+					static_cast<u32>(size)
+					)
+				);
 }
 
 int usb_link_transport_driver_read(
@@ -194,14 +199,19 @@ int usb_link_transport_driver_read(
 		void * buffer,
 		int size
 		){
-	UsbLinkTransportDriver * h = (UsbLinkTransportDriver *)handle;
+	UsbLinkTransportDriver * h = reinterpret_cast<UsbLinkTransportDriver *>(handle);
 
 	if( handle == nullptr ){
 		return -1;
 	}
 
 	//printf("%s():%d read %d bytes\n", __FUNCTION__, __LINE__, size);
-	int result = h->device_handle().read(buffer, usb::DeviceHandle::Size(size));
+	int result = h->device_handle().read(
+				buffer,
+				usb::DeviceHandle::Size(
+					static_cast<u32>(size)
+					)
+				);
 
 	if( result > 0 ){
 		return result;
@@ -222,7 +232,7 @@ int usb_link_transport_driver_close(
 		return -1;
 	}
 
-	UsbLinkTransportDriver * h = (UsbLinkTransportDriver *)*handle;
+	UsbLinkTransportDriver * h = reinterpret_cast<UsbLinkTransportDriver *>(handle);
 	*handle = nullptr;
 	h->finalize();
 	delete h;
@@ -249,7 +259,7 @@ void usb_link_transport_driver_flush(
 	chrono::MicroTime timeout = h->device_handle().timeout();
 
 	while( usb_link_transport_driver_read(handle, &c, 1) == 1 ){
-		;
+
 	}
 
 	h->device_handle().set_timeout(timeout);
@@ -258,6 +268,6 @@ void usb_link_transport_driver_flush(
 void usb_link_transport_driver_request(
 		link_transport_phy_t handle
 		){
-
+	MCU_UNUSED_ARGUMENT(handle);
 }
 
