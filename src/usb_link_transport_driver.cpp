@@ -228,11 +228,13 @@ int usb_link_transport_driver_read(
 int usb_link_transport_driver_close(
 		link_transport_phy_t * handle
 		){
+
+
 	if( handle == nullptr ){
 		return -1;
 	}
 
-	UsbLinkTransportDriver * h = reinterpret_cast<UsbLinkTransportDriver *>(handle);
+	UsbLinkTransportDriver * h = reinterpret_cast<UsbLinkTransportDriver *>(*handle);
 	*handle = nullptr;
 	h->finalize();
 	delete h;
