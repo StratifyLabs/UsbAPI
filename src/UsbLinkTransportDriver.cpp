@@ -25,6 +25,9 @@ int UsbLinkTransportDriver::initialize(
 	}
 
 	m_device_handle = device->get_handle();
+	if( m_device_handle.set_configuration(1) < 0 ){
+		return -1;
+	}
 
 	if( m_device_handle.open(
 				options.interface_path()

@@ -339,7 +339,7 @@ private:
 		} else {
 			libusb_get_config_descriptor(
 						m_device,
-						m_is_active_configuration,
+						m_configuration_index,
 						&descriptor
 						);
 		}

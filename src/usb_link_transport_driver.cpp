@@ -76,10 +76,10 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 		if( UsbLinkTransportDriver::is_device_stratify_os(device) ){
 
 			//check the interfaces
-			usb::ConfigurationDescriptor active_configuration =
-					device.get_active_configuration_descriptor();
+			usb::ConfigurationDescriptor first_configuration =
+					device.get_configuration_descriptor(0);
 
-			usb::InterfaceList interface_list = active_configuration.interface_list();
+			usb::InterfaceList interface_list = first_configuration.interface_list();
 			for(const usb::Interface& iface: interface_list){
 				usb::InterfaceDescriptorList alternate_setting_list = iface.alternate_settings_list();
 				for(const usb::InterfaceDescriptor& iface_descriptor: alternate_setting_list){
