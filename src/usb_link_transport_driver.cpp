@@ -57,21 +57,14 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 			.set_vendor_id(0x20a0);
 
 	//return the format vid/pid/serial
-	static usb::Session session;
-	static bool is_first_call = true;
-	static usb::DeviceList device_list = session.get_device_list(session_options);
 
-	if( is_first_call == false ){
-		if( (last == nullptr) || (last[0] == 0) ){
-			device_list = session.get_device_list(session_options);
-		}
-	} else {
-		is_first_call = false;
+	if( (last == nullptr) || (last[0] == 0) ){
+		UsbLinkTransportDriver::session().get_device_list(session_options);
 	}
 
 	//where is the last entry
 	bool is_next_new = false;
-	for(const usb::Device & device: device_list){
+	for(const usb::Device & device: UsbLinkTransportDriver::session().device_list()){
 		//do any of the descriptors contain StratifyOS
 		if( UsbLinkTransportDriver::is_device_stratify_os(device) ){
 

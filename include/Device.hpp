@@ -104,6 +104,10 @@ public:
 		return *this;
 	}
 
+	bool is_valid() const {
+		return m_handle != nullptr;
+	}
+
 	int open(
 			const var::String & name,
 			const fs::OpenFlags & flags = fs::OpenFlags::read_write()
@@ -160,10 +164,6 @@ public:
 			) const {
 		//not supported
 		return -1;
-	}
-
-	bool is_valid() const {
-		return m_handle != nullptr;
 	}
 
 	int get_configuration(){
@@ -259,8 +259,8 @@ private:
 	API_READ_ACCESS_COMPOUND(DeviceHandle, EndpointList, endpoint_list);
 	API_ACCESS_COMPOUND(DeviceHandle, chrono::MicroTime, timeout);
 	mutable var::Vector<DeviceReadBuffer> m_read_buffer_list;
-	libusb_device_handle * m_handle;
-	Device * m_device;
+	libusb_device_handle * m_handle = nullptr;
+	Device * m_device = nullptr;
 
 	const Endpoint& find_endpoint(u8 address) const;
 	void load_endpoint_list();
@@ -308,7 +308,7 @@ public:
 		return Device(libusb_get_parent(m_device));
 	}
 
-	u8 get_device_addres() const {
+	u8 get_device_address() const {
 		return libusb_get_device_address(m_device);
 	}
 

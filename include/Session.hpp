@@ -24,31 +24,38 @@ public:
 
 	Session();
 	~Session(){
-		libusb_exit(m_context);
-		m_context = nullptr;
+		free_device_list();
+		free_context();
 	}
 
 	void reinitialize(){
-		libusb_exit(m_context);
-		m_context = nullptr;
+		free_device_list();
+		free_context();
 		libusb_init(&m_context);
 	}
 
-	DeviceList get_device_list(
+	const DeviceList & get_device_list(
 			const SessionOptions& options
 			){
-		DeviceList result;
-		libusb_device ** device;
+
+		free_device_list();
+
+		if( m_libusb_device_list != nullptr ){
+			libusb_free_device_list(m_libusb_device_list, 1);
+			m_libusb_device_list = nullptr;
+		}
+
 		ssize_t	count = libusb_get_device_list(
 					m_context,
-					&device
+					&m_libusb_device_list
 					);
-		result.reserve(count);
+		m_device_list.clear();
+		m_device_list.reserve(count);
 		for(ssize_t i=0; i < count; i++){
 			libusb_device_descriptor desc;
 			bool is_match = true;
 			if( options.is_all() == false ){
-				libusb_get_device_descriptor(device[i], &desc);
+				libusb_get_device_descriptor(m_libusb_device_list[i], &desc);
 				if( options.vendor_id() ){
 					if( desc.idVendor != options.vendor_id() ){
 						is_match = false;
@@ -63,17 +70,33 @@ public:
 			}
 
 			if( is_match ){
-				result.push_back(
-							Device(device[i])
+				m_device_list.push_back(
+							Device(m_libusb_device_list[i])
 							);
 			}
 		}
 
-		return result;
+		return device_list();
 	}
 
 private:
+	API_ACCESS_COMPOUND(Session,DeviceList,device_list);
 	libusb_context * m_context = nullptr;
+	libusb_device ** m_libusb_device_list = nullptr;
+
+	void free_device_list(){
+		if( m_libusb_device_list != nullptr ){
+			libusb_free_device_list(m_libusb_device_list, 1);
+			m_libusb_device_list = nullptr;
+		}
+	}
+
+	void free_context(){
+		if( m_context != nullptr ){
+			libusb_exit(m_context);
+			m_context = nullptr;
+		}
+	}
 };
 
 }

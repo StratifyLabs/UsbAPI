@@ -127,12 +127,17 @@ public:
 		return var::String(interface_descriptor.interface_string()).to_lower().find("stratify") != var::String::npos;
 	}
 
+	static usb::Session& session(){
+		return m_session;
+	}
+
 private:
 	API_ACCESS_FUNDAMENTAL(UsbLinkTransportDriver, u8, endpoint_address, 0xff);
 	API_ACCESS_COMPOUND(UsbLinkTransportDriver, usb::DeviceHandle, device_handle);
-	usb::Session m_session;
-	usb::DeviceList m_device_list;
+	static usb::Session m_session;
 	UsbLinkTransportDriverOptions m_options;
+
+	usb::Device * reload_list_and_find_device(const UsbLinkTransportDriverOptions & options);
 };
 
 #endif // USBLINKTRANSPORTDRIVER_HPP
