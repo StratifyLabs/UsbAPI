@@ -76,6 +76,7 @@ int usb_link_transport_getname(char * dest, const char * last, int len){
 			for(const usb::Interface& iface: interface_list){
 				usb::InterfaceDescriptorList alternate_setting_list = iface.alternate_settings_list();
 				for(const usb::InterfaceDescriptor& iface_descriptor: alternate_setting_list){
+
 					if( UsbLinkTransportDriver::is_interface_stratify_os(iface_descriptor) == true ){
 						String device_path = UsbLinkPath(device, iface_descriptor.interface_number()).build_path();
 
@@ -198,7 +199,6 @@ int usb_link_transport_driver_read(
 		return -1;
 	}
 
-	//printf("%s():%d read %d bytes\n", __FUNCTION__, __LINE__, size);
 	int result = h->device_handle().read(
 				buffer,
 				usb::DeviceHandle::Size(

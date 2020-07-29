@@ -282,7 +282,8 @@ public:
 	DeviceHandle get_handle(){
 		load_strings();
 		libusb_device_handle * handle;
-		if( libusb_open(m_device, &handle) < 0){
+		int result;
+		if( (result = libusb_open(m_device, &handle)) < 0){
 			return DeviceHandle();
 		}
 		return DeviceHandle(handle).set_device(this);

@@ -81,9 +81,11 @@ Device * DeviceList::find(
 
 	for(auto & device: *this){
 		DeviceDescriptor device_descriptor = device.get_device_descriptor();
+
 		if( (device_descriptor.vendor_id() == vendor_id.argument()) &&
 				(device_descriptor.product_id() == product_id.argument())
 				){
+
 			if( serial_number.is_empty() ){
 				return &device;
 			} else if( device_descriptor.serial_number_string() == serial_number ){
@@ -91,7 +93,6 @@ Device * DeviceList::find(
 			}
 		}
 	}
-
 
 	return nullptr;
 }
@@ -166,7 +167,6 @@ int DeviceHandle::read(
 			if( result > 0 ){
 				read_buffer->buffer().resize(result);
 			} else {
-				//printf("%s():%d: transfer got not bytes\n", __FUNCTION__, __LINE__);
 				read_buffer->buffer().resize(0);
 				if( bytes_read > 0 ){
 					return bytes_read;

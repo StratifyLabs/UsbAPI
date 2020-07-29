@@ -31,6 +31,11 @@ int UsbLinkTransportDriver::initialize(
 		if( device == nullptr ){
 			return -1;
 		}
+
+		m_device_handle = device->get_handle();
+		if( m_device_handle.is_valid() == false ){
+			return -1;
+		}
 	}
 
 	if( m_device_handle.set_configuration(1) < 0 ){
@@ -62,16 +67,16 @@ int UsbLinkTransportDriver::get_status(){
 usb::Device * UsbLinkTransportDriver::reload_list_and_find_device(
 		const UsbLinkTransportDriverOptions & options
 		){
-		//try re-loading the list if nothing was found
-		session().get_device_list(
-						usb::SessionOptions()
-						.set_vendor_id(options.vendor_id())
-						.set_product_id(options.product_id())
-						);
-		return session().device_list().find(
-						usb::DeviceList::VendorId(options.vendor_id()),
-						usb::DeviceList::ProductId(options.product_id()),
-						options.serial_number()
-						);
+	//try re-loading the list if nothing was found
+	session().get_device_list(
+				usb::SessionOptions()
+				.set_vendor_id(options.vendor_id())
+				.set_product_id(options.product_id())
+				);
+	return session().device_list().find(
+				usb::DeviceList::VendorId(options.vendor_id()),
+				usb::DeviceList::ProductId(options.product_id()),
+				options.serial_number()
+				);
 }
 

@@ -120,10 +120,18 @@ public:
 				return true;
 			}
 		}
-		return false;
+
+		//if there are no strings -- check the interface
+		return true;
 	}
 
 	static bool is_interface_stratify_os(const usb::InterfaceDescriptor & interface_descriptor){
+		if( (interface_descriptor.interface_class() == 0xff)
+				&& (interface_descriptor.interface_sub_class() == 0x50)
+				&& (interface_descriptor.interface_protocol() == 0x51) ){
+			return true;
+		}
+
 		return var::String(interface_descriptor.interface_string()).to_lower().find("stratify") != var::String::npos;
 	}
 
