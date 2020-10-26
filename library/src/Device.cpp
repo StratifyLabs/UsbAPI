@@ -92,7 +92,6 @@ void DeviceHandle::load_endpoint_list() {
       if (alternate_setting.interface_number() == m_interface_number) {
         for (const EndpointDescriptor &endpoint :
              alternate_setting.endpoint_list()) {
-          printf("%s():%d %X\n", __FUNCTION__, __LINE__, endpoint.address());
 
           m_endpoint_list.push_back(Endpoint(endpoint).set_interface(
             alternate_setting.interface_number()));

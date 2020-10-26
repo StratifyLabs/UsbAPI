@@ -21,35 +21,24 @@ int UsbLinkTransportDriver::initialize(
   }
 
   if (device == nullptr) {
-    printf("%s():%d\n", __FUNCTION__, __LINE__);
     return -1;
   }
 
-  printf("%s():%d\n", __FUNCTION__, __LINE__);
   m_device_handle = device->get_handle(1, options.interface_path());
 
   if (m_device_handle.is_valid() == false) {
     device = reload_list_and_find_device(options);
     if (device == nullptr) {
-      printf("%s():%d\n", __FUNCTION__, __LINE__);
       return -1;
     }
 
-    printf("%s():%d\n", __FUNCTION__, __LINE__);
     m_device_handle = device->get_handle(1, options.interface_path());
     if (m_device_handle.is_valid() == false) {
-      printf("%s():%d\n", __FUNCTION__, __LINE__);
       return -1;
     }
   }
 
-  printf("%s():%d\n", __FUNCTION__, __LINE__);
   m_device_handle.set_timeout(options.timeout());
-  printf(
-    "%s():%d %d\n",
-    __FUNCTION__,
-    __LINE__,
-    m_device_handle.endpoint_list().count());
 
   return 0;
 }

@@ -43,7 +43,6 @@ public:
 
     auto list = path.split("/");
 
-    printf("count is %d\n", list.count());
     if (list.count() > 1) {
       if (list.at(1) != "usb") {
         m_is_usb_path = false;
