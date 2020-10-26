@@ -2,6 +2,7 @@
 #define USBAPI_DEVICE_HPP
 
 #include <fs/File.hpp>
+#include <var/Data.hpp>
 #include <var/Vector.hpp>
 
 #include "Descriptor.hpp"
@@ -73,21 +74,25 @@ public:
 
   DeviceHandle(
     libusb_device_handle *handle,
+    Device *device,
     int configuration,
     const var::StringView name) {
+    m_device = device;
     m_handle = handle;
     set_configuration(configuration);
     open(name, fs::OpenMode::read_write());
   }
+
+  DeviceHandle &&move() { return std::move(*this); }
 
   DeviceHandle &set_device(Device *device) {
     m_device = device;
     return *this;
   }
 
-  DeviceHandle(DeviceHandle &&a) { std::swap(m_handle, a.m_handle); }
+  DeviceHandle(DeviceHandle &&a) { swap(a); }
   DeviceHandle &operator=(DeviceHandle &&a) {
-    std::swap(m_handle, a.m_handle);
+    swap(a);
     return *this;
   }
 
@@ -203,8 +208,17 @@ private:
   API_READ_ACCESS_COMPOUND(DeviceHandle, EndpointList, endpoint_list);
   API_ACCESS_COMPOUND(DeviceHandle, chrono::MicroTime, timeout);
   mutable var::Vector<DeviceReadBuffer> m_read_buffer_list;
+
   libusb_device_handle *m_handle = nullptr;
   Device *m_device = nullptr;
+
+  void swap(DeviceHandle &a) {
+    std::swap(m_handle, a.m_handle);
+    std::swap(m_device, a.m_device);
+    std::swap(m_endpoint_list, a.m_endpoint_list);
+    std::swap(m_timeout, a.m_timeout);
+    std::swap(m_interface_number, a.m_interface_number);
+  }
 
   int interface_lseek(int offset, int whence) const override final {
     switch (static_cast<Whence>(whence)) {
@@ -269,17 +283,15 @@ public:
 
   DeviceHandle get_handle(int configuration, const var::StringView path) {
     if (is_error()) {
-      return std::move(DeviceHandle());
+      return DeviceHandle();
     }
     load_strings();
     libusb_device_handle *handle = nullptr;
-    int result;
     API_SYSTEM_CALL("", libusb_open(m_device, &handle));
     if (is_error()) {
       return std::move(DeviceHandle());
     }
-    return std::move(
-      DeviceHandle(handle, configuration, path).set_device(this));
+    return std::move(DeviceHandle(handle, this, configuration, path));
   }
 
   u8 get_bus_number() const {

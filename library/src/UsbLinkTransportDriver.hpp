@@ -21,7 +21,7 @@ public:
 
   var::String build_path() const {
     return var::String().format(
-             "usb@/%04X/%04X/%02X/",
+             "/usb/%04X/%04X/%02X/",
              vendor_id(),
              product_id(),
              interface_number())
@@ -35,30 +35,39 @@ private:
   API_READ_ACCESS_COMPOUND(UsbLinkPath, var::String, serial_number);
 };
 
-class UsbLinkTransportDriverOptions {
+class UsbLinkTransportDriverOptions : api::ExecutionContext {
 public:
   UsbLinkTransportDriverOptions() { m_is_usb_path = false; }
 
   UsbLinkTransportDriverOptions(const var::StringView path) {
-    if (path.find("usb@") == 0) {
-      var::StringViewList path_items = path.split("/");
-      if (path_items.count() < 4) {
+
+    auto list = path.split("/");
+
+    printf("count is %d\n", list.count());
+    if (list.count() > 1) {
+      if (list.at(1) != "usb") {
+        m_is_usb_path = false;
         return;
       }
-
-      m_vendor_id = var::String(path_items.at(1));
-      m_product_id = var::String(path_items.at(2));
-      m_interface_path = var::String(path_items.at(3));
-      if (path_items.count() == 5) {
-        m_serial_number = var::String(path_items.at(4));
-      } else if (path_items.count() > 5) {
-        return;
-      }
-      m_is_usb_path = true;
-
-    } else {
-      m_is_usb_path = false;
     }
+
+    if (list.count() > 2) {
+      m_vendor_id = list.at(2);
+    }
+
+    if (list.count() > 3) {
+      m_product_id = list.at(3);
+    }
+
+    if (list.count() > 4) {
+      m_interface_path = list.at(4);
+    }
+
+    if (list.count() > 5) {
+      m_serial_number = list.at(5);
+    }
+
+    m_is_usb_path = true;
   }
 
   bool is_valid() const { return m_is_usb_path; }
@@ -76,18 +85,18 @@ public:
       var::StringView::Base::hexidecimal);
   }
 
-  const var::String &interface_path() const { return m_interface_path; }
+  const var::StringView &interface_path() const { return m_interface_path; }
 
-  const var::String &serial_number() const { return m_serial_number; }
+  const var::StringView &serial_number() const { return m_serial_number; }
 
   chrono::MicroTime timeout() const { return 10_milliseconds; }
 
 private:
   bool m_is_usb_path;
-  var::String m_interface_path;
-  var::String m_vendor_id;
-  var::String m_product_id;
-  var::String m_serial_number;
+  var::StringView m_interface_path;
+  var::StringView m_vendor_id;
+  var::StringView m_product_id;
+  var::StringView m_serial_number;
 };
 
 class UsbLinkTransportDriver {

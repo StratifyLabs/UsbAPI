@@ -12,6 +12,7 @@ Device::Device(libusb_device *device) {
 }
 
 DeviceDescriptor Device::get_device_descriptor() const {
+  API_ASSERT(m_device != nullptr);
   struct libusb_device_descriptor descriptor = {0};
   if (is_success()) {
     API_SYSTEM_CALL("", libusb_get_device_descriptor(m_device, &descriptor));
@@ -21,10 +22,12 @@ DeviceDescriptor Device::get_device_descriptor() const {
 
 ConfigurationDescriptor
 Device::get_configuration_descriptor(int configuration_number) const {
+  API_ASSERT(m_device != nullptr);
   return ConfigurationDescriptor(m_device, configuration_number, m_string_list);
 }
 
 ConfigurationDescriptor Device::get_active_configuration_descriptor() const {
+  API_ASSERT(m_device != nullptr);
   return ConfigurationDescriptor(m_device, m_string_list);
 }
 
@@ -79,6 +82,7 @@ Device *DeviceList::find(const Find &options) {
 }
 
 void DeviceHandle::load_endpoint_list() {
+  API_ASSERT(m_device != nullptr);
   ConfigurationDescriptor configuration
     = m_device->get_active_configuration_descriptor();
   m_endpoint_list.clear();
@@ -88,6 +92,8 @@ void DeviceHandle::load_endpoint_list() {
       if (alternate_setting.interface_number() == m_interface_number) {
         for (const EndpointDescriptor &endpoint :
              alternate_setting.endpoint_list()) {
+          printf("%s():%d %X\n", __FUNCTION__, __LINE__, endpoint.address());
+
           m_endpoint_list.push_back(Endpoint(endpoint).set_interface(
             alternate_setting.interface_number()));
         }

@@ -8,12 +8,12 @@ int UsbLinkTransportDriver::initialize(
   const UsbLinkTransportDriverOptions &options) {
 
   m_options = options;
-  // find a device in the list that matches options
-  usb::Device *device = session().device_list()(
-    usb::DeviceList::Find()
-      .set_vendor_id(options.vendor_id())
-      .set_product_id(options.product_id())
-      .set_serial_number(options.serial_number().string_view()));
+
+  usb::Device *device
+    = session().device_list()(usb::DeviceList::Find()
+                                .set_vendor_id(options.vendor_id())
+                                .set_product_id(options.product_id())
+                                .set_serial_number(options.serial_number()));
 
   if (device == nullptr) {
     // try re-loading the list if nothing was found
@@ -21,24 +21,35 @@ int UsbLinkTransportDriver::initialize(
   }
 
   if (device == nullptr) {
+    printf("%s():%d\n", __FUNCTION__, __LINE__);
     return -1;
   }
 
+  printf("%s():%d\n", __FUNCTION__, __LINE__);
   m_device_handle = device->get_handle(1, options.interface_path());
 
   if (m_device_handle.is_valid() == false) {
     device = reload_list_and_find_device(options);
     if (device == nullptr) {
+      printf("%s():%d\n", __FUNCTION__, __LINE__);
       return -1;
     }
 
+    printf("%s():%d\n", __FUNCTION__, __LINE__);
     m_device_handle = device->get_handle(1, options.interface_path());
     if (m_device_handle.is_valid() == false) {
+      printf("%s():%d\n", __FUNCTION__, __LINE__);
       return -1;
     }
   }
 
+  printf("%s():%d\n", __FUNCTION__, __LINE__);
   m_device_handle.set_timeout(options.timeout());
+  printf(
+    "%s():%d %d\n",
+    __FUNCTION__,
+    __LINE__,
+    m_device_handle.endpoint_list().count());
 
   return 0;
 }
@@ -60,9 +71,8 @@ usb::Device *UsbLinkTransportDriver::reload_list_and_find_device(
   session().get_device_list(usb::SessionOptions()
                               .set_vendor_id(options.vendor_id())
                               .set_product_id(options.product_id()));
-  return session().device_list()(
-    usb::DeviceList::Find()
-      .set_product_id(options.product_id())
-      .set_vendor_id(options.vendor_id())
-      .set_serial_number(options.serial_number().string_view()));
+  return session().device_list()(usb::DeviceList::Find()
+                                   .set_product_id(options.product_id())
+                                   .set_vendor_id(options.vendor_id())
+                                   .set_serial_number(options.serial_number()));
 }

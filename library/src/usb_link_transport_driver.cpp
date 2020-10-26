@@ -179,9 +179,13 @@ int usb_link_transport_driver_read(
     return -1;
   }
 
-  h->device_handle().read(buffer, size);
+  int result = h->device_handle().read(buffer, size).return_value();
 
-  if (h->device_handle().return_value() == LIBUSB_ERROR_TIMEOUT) {
+  if (result > 0) {
+    return result;
+  }
+
+  if (result == LIBUSB_ERROR_TIMEOUT) {
     return 0;
   }
 
