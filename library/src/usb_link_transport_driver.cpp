@@ -229,6 +229,7 @@ void usb_link_transport_driver_flush(link_transport_phy_t handle) {
 
   while (usb_link_transport_driver_read(handle, &c, 1) == 1) {
   }
+  // API_RESET_ERROR();
 
   h->device_handle().set_timeout(timeout);
 }

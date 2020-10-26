@@ -150,18 +150,21 @@ int DeviceHandle::interface_read(void *buf, int nbyte) const {
         if (bytes_read > 0) {
           return bytes_read;
         }
+        printf("read %d bytes %d\n", result, is_error());
         return result;
       }
     }
   }
 
+  printf("-read %d bytes %d\n", bytes_read, is_error());
   return bytes_read;
 }
 
 int DeviceHandle::interface_write(const void *buf, int nbyte) const {
   const Endpoint endpoint = find_endpoint(m_location);
-  printf("%s():%d\n", __FUNCTION__, __LINE__);
-  return transfer(endpoint, (void *)buf, nbyte, false);
+  int result = transfer(endpoint, (void *)buf, nbyte, false);
+  printf("wrote %d bytes %d\n", result, is_error());
+  return result;
 }
 
 int DeviceHandle::transfer(
