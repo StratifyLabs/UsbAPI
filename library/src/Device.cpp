@@ -160,6 +160,7 @@ int DeviceHandle::interface_read(void *buf, int nbyte) const {
 
 int DeviceHandle::interface_write(const void *buf, int nbyte) const {
   const Endpoint endpoint = find_endpoint(m_location);
+  printf("%s():%d\n", __FUNCTION__, __LINE__);
   return transfer(endpoint, (void *)buf, nbyte, false);
 }
 
@@ -168,6 +169,8 @@ int DeviceHandle::transfer(
   void *buf,
   int nbyte,
   bool is_read) const {
+
+  API_RETURN_VALUE_IF_ERROR(-1);
 
   if (endpoint.is_valid() == false) {
     return -1;

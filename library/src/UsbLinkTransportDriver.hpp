@@ -19,13 +19,14 @@ public:
 
   bool is_valid() const { return vendor_id() != 0; }
 
-  var::String build_path() const {
-    return var::String().format(
-             "/usb/%04X/%04X/%02X/",
-             vendor_id(),
-             product_id(),
-             interface_number())
-           + serial_number();
+  var::PathString build_path() const {
+    return var::PathString()
+      .format(
+        "/usb/%04X/%04X/%02X/",
+        vendor_id(),
+        product_id(),
+        interface_number())
+      .append(serial_number());
   }
 
 private:

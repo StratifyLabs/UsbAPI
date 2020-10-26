@@ -28,11 +28,11 @@ void usb_link_transport_load_driver(link_transport_mdriver_t *driver) {
 }
 
 int usb_link_transport_getname(char *dest, const char *last, int len) {
-  String last_entry;
-  String dest_entry;
+  PathString last_entry;
+  PathString dest_entry;
 
   if (last != nullptr) {
-    last_entry = String(last);
+    last_entry = StringView(last);
   }
 
   const usb::SessionOptions session_options
@@ -65,7 +65,7 @@ int usb_link_transport_getname(char *dest, const char *last, int len) {
           if (
             UsbLinkTransportDriver::is_interface_stratify_os(iface_descriptor)
             == true) {
-            String device_path
+            PathString device_path
               = UsbLinkPath(device, iface_descriptor.interface_number())
                   .build_path();
 
@@ -150,6 +150,7 @@ usb_link_transport_driver_open(const char *path, const void *options) {
     }
   }
 
+  API_RESET_ERROR();
   handle->device_handle().seek(handle->endpoint_address());
 
   return handle;
@@ -165,7 +166,10 @@ int usb_link_transport_driver_write(
     return -1;
   }
 
-  return h->device_handle().write(buffer, size).return_value();
+  API_RESET_ERROR();
+  int result = h->device_handle().write(buffer, size).return_value();
+
+  return result;
 }
 
 int usb_link_transport_driver_read(
@@ -179,6 +183,7 @@ int usb_link_transport_driver_read(
     return -1;
   }
 
+  API_RESET_ERROR();
   int result = h->device_handle().read(buffer, size).return_value();
 
   if (result > 0) {
@@ -186,6 +191,7 @@ int usb_link_transport_driver_read(
   }
 
   if (result == LIBUSB_ERROR_TIMEOUT) {
+    API_RESET_ERROR();
     return 0;
   }
 

@@ -35,6 +35,7 @@ public:
   }
 
   const DeviceList &get_device_list(const SessionOptions &options) {
+    m_device_list.clear();
     API_RETURN_VALUE_IF_ERROR(device_list());
 
     free_device_list();
@@ -48,7 +49,6 @@ public:
       "",
       libusb_get_device_list(m_context, &m_libusb_device_list));
 
-    m_device_list.clear();
     m_device_list.reserve(count);
     for (ssize_t i = 0; i < count; i++) {
       libusb_device_descriptor desc;
