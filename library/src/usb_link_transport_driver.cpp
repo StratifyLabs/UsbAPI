@@ -165,6 +165,7 @@ int usb_link_transport_driver_write(
   if (handle == nullptr) {
     return -1;
   }
+  // h->device_handle().set_timeout(timeout);
 
   API_RESET_ERROR();
   int result = h->device_handle().write(buffer, size).return_value();
@@ -229,7 +230,7 @@ void usb_link_transport_driver_flush(link_transport_phy_t handle) {
 
   while (usb_link_transport_driver_read(handle, &c, 1) == 1) {
   }
-  // API_RESET_ERROR();
+  API_RESET_ERROR();
 
   h->device_handle().set_timeout(timeout);
 }

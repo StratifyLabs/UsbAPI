@@ -193,7 +193,7 @@ private:
       int byte_count = nbyte < buffer().size() ? nbyte : buffer().size();
       if (byte_count) {
         memcpy(dest, buffer().data(), byte_count);
-        buffer()(var::Data::Erase().set_size(byte_count));
+        m_buffer(var::Data::Erase().set_size(byte_count));
       }
       return byte_count;
     }

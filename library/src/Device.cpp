@@ -150,20 +150,17 @@ int DeviceHandle::interface_read(void *buf, int nbyte) const {
         if (bytes_read > 0) {
           return bytes_read;
         }
-        printf("read %d bytes %d\n", result, is_error());
         return result;
       }
     }
   }
 
-  printf("-read %d bytes %d\n", bytes_read, is_error());
   return bytes_read;
 }
 
 int DeviceHandle::interface_write(const void *buf, int nbyte) const {
   const Endpoint endpoint = find_endpoint(m_location);
-  int result = transfer(endpoint, (void *)buf, nbyte, false);
-  printf("wrote %d bytes %d\n", result, is_error());
+  const int result = transfer(endpoint, (void *)buf, nbyte, false);
   return result;
 }
 
@@ -197,8 +194,6 @@ int DeviceHandle::transfer(
     if (result > 0) {
       bytes_transferred += result;
     } else {
-      // printf("%s():%d:transfer error result %d\n", __FUNCTION__, __LINE__,
-      // result);
       return result;
     }
 
@@ -206,7 +201,6 @@ int DeviceHandle::transfer(
 
   // send a zero length packet??
   if (!is_read && (result == max_packet_size)) {
-    // printf("%s():%d:zlp\n", __FUNCTION__, __LINE__);
     transfer_packet(endpoint, nullptr, 0, is_read);
   }
 
