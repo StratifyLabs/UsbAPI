@@ -73,16 +73,16 @@ public:
   bool is_valid() const { return m_is_usb_path; }
 
   u16 vendor_id() const {
-    return m_vendor_id.to_unsigned_long(var::StringView::Base::hexidecimal);
+    return m_vendor_id.to_unsigned_long(var::StringView::Base::hexadecimal);
   }
 
   u16 product_id() const {
-    return m_product_id.to_unsigned_long(var::StringView::Base::hexidecimal);
+    return m_product_id.to_unsigned_long(var::StringView::Base::hexadecimal);
   }
 
   u16 interface_number() const {
     return m_interface_path.to_unsigned_long(
-      var::StringView::Base::hexidecimal);
+      var::StringView::Base::hexadecimal);
   }
 
   const var::StringView &interface_path() const { return m_interface_path; }

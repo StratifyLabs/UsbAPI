@@ -247,7 +247,7 @@ private:
 
     if (is_valid()) {
       m_interface_number
-        = name.to_unsigned_long(var::StringView::Base::hexidecimal);
+        = name.to_unsigned_long(var::StringView::Base::hexadecimal);
       load_endpoint_list();
       claim_interface();
       return;
