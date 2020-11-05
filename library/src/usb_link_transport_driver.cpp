@@ -224,6 +224,7 @@ void usb_link_transport_driver_wait(int milliseconds) {
 
 void usb_link_transport_driver_flush(link_transport_phy_t handle) {
   u8 c;
+  API_RETURN_IF_ERROR();
   UsbLinkTransportDriver *h = static_cast<UsbLinkTransportDriver *>(handle);
 
   chrono::MicroTime timeout = h->device_handle().timeout();
