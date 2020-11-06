@@ -167,10 +167,9 @@ int usb_link_transport_driver_write(
   }
   // h->device_handle().set_timeout(timeout);
 
+  api::ErrorGuard error_guard;
   API_RESET_ERROR();
-  int result = h->device_handle().write(buffer, size).return_value();
-
-  return result;
+  return h->device_handle().write(buffer, size).return_value();
 }
 
 int usb_link_transport_driver_read(
@@ -184,16 +183,18 @@ int usb_link_transport_driver_read(
     return -1;
   }
 
-  API_RESET_ERROR();
-  int result = h->device_handle().read(buffer, size).return_value();
-
-  if (result > 0) {
-    return result;
-  }
-
-  if (result == LIBUSB_ERROR_TIMEOUT) {
+  {
+    api::ErrorGuard error_guard;
     API_RESET_ERROR();
-    return 0;
+    int result = h->device_handle().read(buffer, size).return_value();
+
+    if (result > 0) {
+      return result;
+    }
+
+    if (result == LIBUSB_ERROR_TIMEOUT) {
+      return 0;
+    }
   }
 
   return LINK_PHY_ERROR;
