@@ -1,15 +1,10 @@
-#ifndef REPORTAPI_REPORT_HPP
-#define REPORTAPI_REPORT_HPP
+#ifndef USBAPI_USB_HPP
+#define USBAPI_USB_HPP
 
-namespace report{}
+namespace usb{}
 
-#include "report/Writer.hpp"
-#include "report/Parser.hpp"
-#include "report/Csv.hpp"
-#include "report/Histogram.hpp"
-#include "report/Mermaid.hpp"
-#include "report/Table.hpp"
+#include "usb/Session.hpp"
 
-using namespace report;
+using namespace usb;
 
-#endif // REPORTAPI_REPORT_HPP
+#endif // USBAPI_USB_HPP

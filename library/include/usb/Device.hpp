@@ -289,9 +289,9 @@ public:
     libusb_device_handle *handle = nullptr;
     API_SYSTEM_CALL("", libusb_open(m_device, &handle));
     if (is_error()) {
-      return std::move(DeviceHandle());
+			return DeviceHandle();
     }
-    return std::move(DeviceHandle(handle, this, configuration, path));
+		return DeviceHandle(handle, this, configuration, path);
   }
 
   u8 get_bus_number() const {
