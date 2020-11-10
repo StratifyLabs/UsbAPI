@@ -1,5 +1,5 @@
 
-set(DEPENDENCIES JsonAPI FsAPI ChronoAPI VarAPI)
+set(DEPENDENCIES JsonAPI FsAPI ChronoAPI VarAPI StratifyOS)
 
 
 stratifyapi_add_api_library(UsbAPI "${DEPENDENCIES}")
