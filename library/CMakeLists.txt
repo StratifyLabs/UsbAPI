@@ -7,6 +7,8 @@ set(LIBUSB ${SOS_SDK_PATH}/Tools/gcc/lib/libusb-1.0.a)
 
 if(SOS_SDK_IS_MACOS)
 	set(FRAMEWORKS "-framework Cocoa" "-framework IOKit")
+elseif(SOS_SDK_IS_LINUX)
+	set(FRAMEWORKS "udev")
 endif()
 
 target_link_libraries(UsbAPI_release_link
