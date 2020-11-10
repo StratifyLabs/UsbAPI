@@ -16,6 +16,7 @@ set(LOCAL_NAME UsbAPI)
 project(${LOCAL_NAME} CXX)
 include(CTest)
 
+add_subdirectory(lusb lusb)
 add_subdirectory(tests tests)
 add_subdirectory(library library)
 
