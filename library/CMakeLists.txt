@@ -1,7 +1,7 @@
 
 set(DEPENDENCIES JsonAPI FsAPI ChronoAPI VarAPI StratifyOS)
 
-stratifyapi_add_api_library(UsbAPI "${DEPENDENCIES}")
+api_add_api_library(UsbAPI "${DEPENDENCIES}")
 
 set(LIBUSB ${SOS_SDK_PATH}/Tools/gcc/lib/libusb-1.0.a)
 
