@@ -1,7 +1,7 @@
 #ifndef USBAPI_DESCRIPTOR_HPP
 #define USBAPI_DESCRIPTOR_HPP
 
-#include <mcu/types.h>
+#include <sdk/types.h>
 #include <type_traits>
 
 #include <json/Json.hpp>
