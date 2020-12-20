@@ -1,3 +1,5 @@
+// Copyright 2020-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 #ifndef USB_LINK_TRANSPORT_DRIVER_H
 #define USB_LINK_TRANSPORT_DRIVER_H
 

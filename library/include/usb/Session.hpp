@@ -1,3 +1,5 @@
+// Copyright 2020-2021 Tyler Gilbert and Stratify Labs, Inc; see LICENSE.md
+
 #ifndef USBAPI_SESSION_HPP
 #define USBAPI_SESSION_HPP
 
