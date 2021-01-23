@@ -18,7 +18,9 @@ static const link_transport_mdriver_t usb_link_transport_default_driver = {
   .dev_name = {0},
   .notify_name = {0},
   .options = nullptr,
-  .transport_version = 0};
+  .transport_version = 0,
+  .path_max = LINK_PATH_MAX,
+  .arg_max = LINK_PATH_ARG_MAX};
 
 typedef struct {
   UsbLinkTransportDriver *driver;
