@@ -108,7 +108,7 @@ public:
     API_RETURN_VALUE_IF_ERROR(-1);
     int configuration_number;
     API_SYSTEM_CALL(
-      "",
+      "DeviceHandle::libusb_get_configuration",
       libusb_get_configuration(m_handle, &configuration_number));
     return configuration_number;
   }
@@ -116,20 +116,20 @@ public:
   DeviceHandle &set_configuration(int configuration_number) {
     API_RETURN_VALUE_IF_ERROR(*this);
     API_SYSTEM_CALL(
-      "",
+      "DeviceHandle::libusb_set_configuration",
       libusb_set_configuration(m_handle, configuration_number));
     return *this;
   }
 
   DeviceHandle &claim_interface() {
     API_RETURN_VALUE_IF_ERROR(*this);
-    API_SYSTEM_CALL("", libusb_claim_interface(m_handle, m_interface_number));
+    API_SYSTEM_CALL("DeviceHandle::libusb_claim_interface", libusb_claim_interface(m_handle, m_interface_number));
     return *this;
   }
 
   DeviceHandle &release_interface() {
     API_RETURN_VALUE_IF_ERROR(*this);
-    API_SYSTEM_CALL("", libusb_release_interface(m_handle, m_interface_number));
+    API_SYSTEM_CALL("DeviceHandle::libusb_release_interface", libusb_release_interface(m_handle, m_interface_number));
     return *this;
   }
 
@@ -138,7 +138,7 @@ public:
 
     API_RETURN_VALUE_IF_ERROR(*this);
     API_SYSTEM_CALL(
-      "",
+      "DeviceHandle::libusb_set_interface_alt_setting",
       libusb_set_interface_alt_setting(
         m_handle,
         interface_number,
@@ -148,20 +148,20 @@ public:
 
   DeviceHandle &clear_halt(u8 endpoint_address) {
     API_RETURN_VALUE_IF_ERROR(*this);
-    API_SYSTEM_CALL("", libusb_clear_halt(m_handle, endpoint_address));
+    API_SYSTEM_CALL("DeviceHandle::libusb_clear_halt", libusb_clear_halt(m_handle, endpoint_address));
     return *this;
   }
 
   DeviceHandle &reset() {
     API_RETURN_VALUE_IF_ERROR(*this);
-    API_SYSTEM_CALL("", libusb_reset_device(m_handle));
+    API_SYSTEM_CALL("DeviceHandle::libusb_reset_device", libusb_reset_device(m_handle));
     return *this;
   }
 
   bool is_kernel_driver_active(int interface_number) {
     API_RETURN_VALUE_IF_ERROR(false);
     int result = API_SYSTEM_CALL(
-      "",
+      "DeviceHandle::libusb_kernel_driver_active",
       libusb_kernel_driver_active(m_handle, interface_number));
     return result > 0;
   }
@@ -169,7 +169,7 @@ public:
   DeviceHandle &attach_kernel_driver(int interface_number) {
     API_RETURN_VALUE_IF_ERROR(*this);
     API_SYSTEM_CALL(
-      "",
+      "DeviceHandle::libusb_attach_kernel_driver",
       libusb_attach_kernel_driver(m_handle, interface_number));
     return *this;
   }
@@ -177,14 +177,14 @@ public:
   DeviceHandle &detach_kernel_driver(int interface_number) {
     API_RETURN_VALUE_IF_ERROR(*this);
     API_SYSTEM_CALL(
-      "",
+      "DeviceHandle::libusb_detach_kernel_driver",
       libusb_detach_kernel_driver(m_handle, interface_number));
     return *this;
   }
 
   DeviceHandle &set_auto_detach_kernel_driver(bool value = true) {
     API_RETURN_VALUE_IF_ERROR(*this);
-    API_SYSTEM_CALL("", libusb_set_auto_detach_kernel_driver(m_handle, value));
+    API_SYSTEM_CALL("DeviceHandle::libusb_set_auto_detach_kernel_driver", libusb_set_auto_detach_kernel_driver(m_handle, value));
     return *this;
   }
 
@@ -246,13 +246,13 @@ private:
   void open(
     const var::StringView name,
     const fs::OpenMode &flags = fs::OpenMode::read_write()) {
-
+    API_RETURN_IF_ERROR();
     if (is_valid()) {
       m_interface_number
         = name.to_unsigned_long(var::StringView::Base::hexadecimal);
       load_endpoint_list();
       claim_interface();
-      return;
+     return;
     }
     m_interface_number = -1;
   }
@@ -289,7 +289,7 @@ public:
     }
     load_strings();
     libusb_device_handle *handle = nullptr;
-    API_SYSTEM_CALL("", libusb_open(m_device, &handle));
+    API_SYSTEM_CALL("Device::libusb_open", libusb_open(m_device, &handle));
     if (is_error()) {
 			return DeviceHandle();
     }
@@ -298,12 +298,12 @@ public:
 
   u8 get_bus_number() const {
     API_RETURN_VALUE_IF_ERROR(0);
-    return API_SYSTEM_CALL("", libusb_get_bus_number(m_device));
+    return API_SYSTEM_CALL("Device::libusb_get_bus_number", libusb_get_bus_number(m_device));
   }
 
   u8 get_port_number() const {
     API_RETURN_VALUE_IF_ERROR(0);
-    return API_SYSTEM_CALL("", libusb_get_port_number(m_device));
+    return API_SYSTEM_CALL("Device::libusb_get_port_number", libusb_get_port_number(m_device));
   }
 
   var::Vector<u8> get_port_numbers() const {
@@ -321,7 +321,7 @@ public:
 
   u8 get_device_address() const {
     API_RETURN_VALUE_IF_ERROR(0);
-    return API_SYSTEM_CALL("", libusb_get_device_address(m_device));
+    return API_SYSTEM_CALL("Device::libusb_get_device_address", libusb_get_device_address(m_device));
   }
 
   DeviceDescriptor get_device_descriptor() const;

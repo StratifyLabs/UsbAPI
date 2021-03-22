@@ -37,6 +37,8 @@ int usb_link_transport_getname(char *dest, const char *last, int len) {
   PathString last_entry;
   PathString dest_entry;
 
+  API_ASSERT(dest != nullptr);
+
   if (last != nullptr) {
     last_entry = StringView(last);
   }
@@ -60,6 +62,7 @@ int usb_link_transport_getname(char *dest, const char *last, int len) {
       // check the interfaces
       usb::ConfigurationDescriptor first_configuration
         = device.get_configuration_descriptor(0);
+      API_RETURN_VALUE_IF_ERROR(-1);
 
       usb::InterfaceList interface_list = first_configuration.interface_list();
       for (const usb::Interface &iface : interface_list) {
@@ -97,7 +100,8 @@ int usb_link_transport_getname(char *dest, const char *last, int len) {
             if (is_bulk_input && is_bulk_output) {
               if (is_next_new || last_entry.is_empty()) {
                 dest_entry = device_path;
-                strncpy(dest, dest_entry.cstring(), static_cast<size_t>(len));
+                View(dest, len).fill(0).copy(View(dest_entry.string_view()));
+                //strncpy(dest, dest_entry.cstring(), static_cast<size_t>(len));
                 return 0;
               }
 
@@ -174,7 +178,6 @@ int usb_link_transport_driver_write(
   // h->device_handle().set_timeout(timeout);
 
   api::ErrorGuard error_guard;
-  API_RESET_ERROR();
   return h->device_handle().write(buffer, size).return_value();
 }
 
@@ -191,7 +194,6 @@ int usb_link_transport_driver_read(
 
   {
     api::ErrorGuard error_guard;
-    API_RESET_ERROR();
     int result = h->device_handle().read(buffer, size).return_value();
 
     if (result > 0) {

@@ -4,8 +4,13 @@
 
 using namespace usb;
 
-Session::Session(){
-	libusb_init(&m_context);
+#define LIBUSB_VERBOSE_DEBUG 0
 
-	 //libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_DEBUG);
+
+Session::Session() {
+  libusb_init(&m_context);
+
+#if LIBUSB_VERBOSE_DEBUG
+  libusb_set_option(m_context, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_DEBUG);
+#endif
 }

@@ -51,7 +51,6 @@ protected:
 class EndpointDescriptor
   : public Descriptor<struct libusb_endpoint_descriptor> {
 public:
-
   EndpointDescriptor(
     const struct libusb_endpoint_descriptor *value,
     const DescriptorStringList &string_list)
@@ -222,31 +221,53 @@ public:
     }
   }
 
-  u16 total_length() const { return m_value->wTotalLength; }
+  u16 total_length() const {
+    API_ASSERT(m_value != nullptr);
+    return m_value->wTotalLength;
+  }
 
-  u8 interface_count() const { return m_value->bNumInterfaces; }
+  u8 interface_count() const {
+    API_ASSERT(m_value != nullptr);
+    return m_value->bNumInterfaces;
+  }
 
-  u8 configuration_value() const { return m_value->bConfigurationValue; }
+  u8 configuration_value() const {
+    API_ASSERT(m_value != nullptr);
+    return m_value->bConfigurationValue;
+  }
 
-  u8 i_configuration() const { return m_value->iConfiguration; }
+  u8 i_configuration() const {
+    API_ASSERT(m_value != nullptr);
+    return m_value->iConfiguration;
+  }
 
   const var::String &configuration_string() const {
     return string(i_configuration());
   }
 
-  u8 attributes() const { return m_value->bmAttributes; }
+  u8 attributes() const {
+    API_ASSERT(m_value != nullptr);
+    return m_value->bmAttributes;
+  }
 
-  u8 max_power() const { return m_value->MaxPower; }
+  u8 max_power() const {
+    API_ASSERT(m_value != nullptr);
+    return m_value->MaxPower;
+  }
 
   InterfaceList interface_list() const {
     InterfaceList result;
+    API_ASSERT(m_value != nullptr);
     for (size_t i = 0; i < interface_count(); i++) {
       result.push_back(Interface(m_value->interface + i, string_list()));
     }
     return result;
   }
 
-  u8 extra_length() const { return m_value->extra_length; }
+  u8 extra_length() const {
+    API_ASSERT(m_value != nullptr);
+    return m_value->extra_length;
+  }
 
   json::JsonObject to_object() const;
 
@@ -256,14 +277,19 @@ private:
   bool m_is_active_configuration = false;
 
   void load_descriptors() {
-    libusb_config_descriptor *descriptor;
+    API_RETURN_IF_ERROR();
+    libusb_config_descriptor *descriptor = nullptr;
     if (m_is_active_configuration) {
-      libusb_get_active_config_descriptor(m_device, &descriptor);
+      API_SYSTEM_CALL(
+        "ConfigurationDescriptor::libusb_get_active_config_descriptor",
+        libusb_get_active_config_descriptor(m_device, &descriptor));
     } else {
-      libusb_get_config_descriptor(
-        m_device,
-        m_configuration_index,
-        &descriptor);
+      API_SYSTEM_CALL(
+        "ConfigurationDescriptor::libusb_get_config_descriptor",
+        libusb_get_config_descriptor(
+          m_device,
+          m_configuration_index,
+          &descriptor));
     }
     m_value = descriptor;
   }

@@ -228,17 +228,18 @@ int DeviceHandle::transfer_packet(
         static_cast<unsigned char *>(buf),
         nbyte,
         &transferred,
-        m_timeout.milliseconds()));
+        m_timeout.milliseconds()*4));
 #if 0
     printf(
-      "%s():%d bulk transfer %d %s to 0x%X result is %d transferred %d\n",
+      "%s():%d bulk transfer %d %s to 0x%X result is %d transferred %d timeout:%d\n",
       __FUNCTION__,
       __LINE__,
       nbyte,
       is_read ? "<-" : "->",
       address,
       result,
-      transferred);
+      transferred,
+      m_timeout.milliseconds());
 #endif
     if (is_read && ((result == 0) || (result == LIBUSB_ERROR_TIMEOUT))) {
       if (transferred > 0) {

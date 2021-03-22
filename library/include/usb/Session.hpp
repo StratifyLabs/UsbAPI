@@ -33,7 +33,7 @@ public:
     API_RETURN_IF_ERROR();
     free_device_list();
     free_context();
-    API_SYSTEM_CALL("", libusb_init(&m_context));
+    API_SYSTEM_CALL("Session::libusb_init", libusb_init(&m_context));
   }
 
   const DeviceList &get_device_list(const SessionOptions &options) {
@@ -48,7 +48,7 @@ public:
     }
 
     ssize_t count = API_SYSTEM_CALL(
-      "",
+      "Session::libusb_get_device_list",
       libusb_get_device_list(m_context, &m_libusb_device_list));
 
     m_device_list.reserve(count);
