@@ -1,39 +1,17 @@
+set(LIBUSB_INCLUDE_DIRECTORY ${SOS_SDK_PATH}/include/libusb-1.0)
+set(LIBUSB_LIB_DIRECTORY ${SOS_SDK_PATH}/lib)
+file(MAKE_DIRECTORY ${LIBUSB_INCLUDE_DIRECTORY})
+file(MAKE_DIRECTORY ${LIBUSB_LIB_DIRECTORY})
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/binaries/include/libusb-1.0/libusb.h 
+	DESTINATION ${LIBUSB_INCLUDE_DIRECTORY})
 
-
-
-set(LIBUSB_GIT_REPOSITORY "https://github.com/libusb/libusb.git")
-set(LIBUSB_BRANCH "master")
-
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lusb/libusb-1.0)
-	message(STATUS "Need to clone for the first call to cmake")
-	execute_process(
-		COMMAND git clone --branch ${LIBUSB_BRANCH} ${LIBUSB_GIT_REPOSITORY}
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-		)
-
+if(SOS_IS_MACOS)
+	set(OS_PATH macos)
+elseif(SOS_IS_WINDOWS)
+	set(OS_PATH win)
+elseif(SOS_IS_LINUX)
+	set(OS_PATH linux)
 endif()
 
-
-#[[
-
-project(libusb CXX C)
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/sources.cmake)
-
-set(PRIVATE_SOURCELIST
-	${SOURCES})
-
-sos_sdk_library_target(RELEASE libusb "${LIB_OPTION}" release ${SOS_ARCH})
-
-add_library(${RELEASE_TARGET} STATIC)
-
-target_sources(${RELEASE_TARGET}
-	PUBLIC
-	${PUBLIC_SOURCES}
-	PRIVATE
-	${PRIVATE_SOURCELIST}
-	)
-
-#]]
-
-
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/binaries/${OS_PATH}/libusb-1.0.a 
+	DESTINATION ${LIBUSB_LIB_DIRECTORY})
