@@ -2,12 +2,11 @@
 
 ## New Features
 
-- none yet
+- Add libusb header file and binaries to the repo. Copy them to the install location when project is configured.
 
 ## Bug Fixes
 
-- Add libusb header file and binaries to the repo. Copy them to the install location when project is configured.
-
+- none yet
 
 # Version 1.0.0
 
