@@ -13,5 +13,7 @@ elseif(SOS_IS_LINUX)
 	set(OS_PATH linux)
 endif()
 
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/binaries/${OS_PATH}/libusb-1.0.a 
-	DESTINATION ${LIBUSB_LIB_DIRECTORY})
+if(NOT ${OS_PATH} STREQUAL linux)
+	file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/binaries/${OS_PATH}/libusb-1.0.a 
+		DESTINATION ${LIBUSB_LIB_DIRECTORY})
+endif()

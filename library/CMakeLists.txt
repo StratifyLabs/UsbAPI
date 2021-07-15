@@ -3,7 +3,15 @@ set(DEPENDENCIES JsonAPI FsAPI ChronoAPI VarAPI StratifyOS)
 
 api_add_api_library(UsbAPI "${DEPENDENCIES}")
 
-set(LIBUSB ${SOS_SDK_PATH}/lib/libusb-1.0.a)
+
+if(SOS_IS_LINUS)
+	message(STATUS "Linking to libusb for linux")
+	set(LIBUSB usb-1.0)
+else()
+	message(STATUS "Using local binaries for windows/mac")
+	set(LIBUSB ${SOS_SDK_PATH}/lib/libusb-1.0.a)
+endif()
+
 
 if(SOS_SDK_IS_MACOS)
 	set(FRAMEWORKS "-framework Cocoa" "-framework IOKit")
