@@ -6,7 +6,7 @@
 
 ## Bug Fixes
 
-- none yet
+- Fixed build setup for linking to libusb on LInux (920fe42cbaa2e1d919c11b64b4beb54bc89cddc7)
 
 # Version 1.0.0
 
