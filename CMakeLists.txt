@@ -16,7 +16,11 @@ set(LOCAL_NAME UsbAPI)
 project(${LOCAL_NAME} CXX)
 include(CTest)
 
+option(USBAPI_IS_TEST "Turn ON to enable test build" OFF)
+
 add_subdirectory(lusb lusb)
-add_subdirectory(tests tests)
+if(USBAPI_IS_TEST)
+	add_subdirectory(tests tests)
+endif()
 add_subdirectory(library library)
 
