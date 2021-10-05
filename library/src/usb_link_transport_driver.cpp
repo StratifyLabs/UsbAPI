@@ -3,7 +3,6 @@
 #include <sos/link.h>
 
 #include <chrono.hpp>
-#include <sys.hpp>
 #include <var.hpp>
 
 #include "UsbLinkTransportDriver.hpp"
