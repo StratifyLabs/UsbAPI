@@ -23,11 +23,6 @@ target_link_libraries(UsbAPI_release_link
 	INTERFACE ${LIBUSB} ${FRAMEWORKS}
 	)
 
-target_link_libraries(UsbAPI_coverage_link
-	INTERFACE ${LIBUSB} ${FRAMEWORKS}
-	)
-
-
 target_link_libraries(UsbAPI_debug_link
 	INTERFACE ${LIBUSB} ${FRAMEWORKS}
 	)
