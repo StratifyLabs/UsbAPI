@@ -1,8 +1,9 @@
 set(DEPENDENCIES JsonAPI SysAPI FsAPI StratifyOS)
 api2_add_library(
 	NAME UsbAPI
-	DEPENDENCIES ${DEPENDENCIES})
-if(CMSDK_IS_LINUS)
+	DEPENDENCIES ${DEPENDENCIES}
+	TARGETS TARGET_LIST)
+if(CMSDK_IS_LINUX)
 	message(STATUS "Linking to libusb for linux")
 	set(LIBUSB usb-1.0)
 else()
@@ -14,10 +15,10 @@ if(CMSDK_IS_MACOS)
 elseif(SOS_SDK_IS_LINUX)
 	set(FRAMEWORKS "udev")
 endif()
-target_link_libraries(UsbAPI_release_link
-	INTERFACE ${LIBUSB} ${FRAMEWORKS})
-target_link_libraries(UsbAPI_debug_link
-	INTERFACE ${LIBUSB} ${FRAMEWORKS})
+foreach(TARGET ${TARGET_LIST})
+	target_link_libraries(${TARGET}
+		INTERFACE ${LIBUSB} ${FRAMEWORKS})
+endforeach()
 
 
 

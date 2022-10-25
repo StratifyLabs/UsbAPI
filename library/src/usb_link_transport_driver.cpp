@@ -177,7 +177,7 @@ int usb_link_transport_driver_write(
   // h->device_handle().set_timeout(timeout);
 
   api::ErrorGuard error_guard;
-  return h->device_handle().write(buffer, size).return_value();
+  return h->device_handle().write(View(buffer, size)).return_value();
 }
 
 int usb_link_transport_driver_read(
@@ -193,7 +193,7 @@ int usb_link_transport_driver_read(
 
   {
     api::ErrorGuard error_guard;
-    int result = h->device_handle().read(buffer, size).return_value();
+    int result = h->device_handle().read(View(buffer, size)).return_value();
 
     if (result > 0) {
       return result;
