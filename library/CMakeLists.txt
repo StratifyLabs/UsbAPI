@@ -1,7 +1,17 @@
-set(DEPENDENCIES JsonAPI SysAPI FsAPI StratifyOS)
+
+cmsdk2_check_version(
+	NAME JsonAPI
+	VERSION ${JsonAPI_VERSION}
+	MINIMUM_VERSION 1.5.2)
+
+cmsdk2_check_version(
+	NAME StratifyOS
+	VERSION ${StratifyOS_VERSION}
+	MINIMUM_VERSION 4.3.1)
+
 api2_add_library(
 	NAME UsbAPI
-	DEPENDENCIES ${DEPENDENCIES}
+	DEPENDENCIES JsonAPI SysAPI FsAPI StratifyOS
 	TARGETS TARGET_LIST)
 if(CMSDK_IS_LINUX)
 	message(STATUS "Linking to libusb for linux")

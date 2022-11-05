@@ -1,12 +1,8 @@
 cmake_minimum_required (VERSION 3.12)
-
-if(NOT DEFINED API_IS_SDK)
-	include(JsonAPI)
-endif()
-
 set(LOCAL_NAME UsbAPI)
-project(${LOCAL_NAME} CXX)
-include(CTest)
+project(UsbAPI
+	LANGUAGES CXX
+	VERSION 1.3.0)
 
 option(USBAPI_IS_TEST "Turn ON to enable test build" OFF)
 

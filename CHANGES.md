@@ -1,3 +1,10 @@
+# Version 1.3.0 (unreleased)
+
+## New Features
+
+- Port to `cmsdk2_` functions
+- Port to API v1.6.x
+
 # Version 1.2.0
 
 ## New Features
